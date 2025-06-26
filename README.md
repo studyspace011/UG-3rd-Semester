@@ -1,2 +1,2 @@
-# tracker-test-1
+# tracker-test
 Syllabus Tracker with Notes &amp; Other
