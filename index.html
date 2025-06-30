@@ -3,662 +3,568 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syllabus Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Student Study Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
         :root {
             --primary: #6c5ce7;
             --secondary: #a29bfe;
             --accent: #fd79a8;
             --dark: #2d3436;
             --light: #f5f6fa;
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
         }
-        
-        body {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
             overflow-x: hidden;
         }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.15);
+
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            background: var(--glass);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
-        
-        .glow-button {
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(109, 89, 231, 0.5);
-        }
-        
-        .glow-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(109, 89, 231, 0.8);
-        }
-        
-        .subject-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: scale(0.95);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             opacity: 0;
-        }
-        
-        .subject-card.show {
-            transform: scale(1);
-            opacity: 1;
-        }
-        
-        .input-field {
-            transition: all 0.4s ease;
             transform: translateY(20px);
-            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
         }
-        
-        .input-field.show {
+
+        .semester-links {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .semester-links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .semester-links a:hover {
+            text-decoration: underline;
+            color: #ff9ff3;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .welcome-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #f5f6fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-screen h2 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .welcome-screen a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .welcome-screen a:hover {
+            text-decoration: underline;
+            color: #ff9ff3;
+        }
+
+        .input-group {
+            width: 100%;
+            max-width: 400px;
+            margin: 30px 0;
+        }
+
+        .input-group label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(253, 121, 168, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.6);
+        }
+
+        .btn:active {
             transform: translateY(0);
-            opacity: 1;
         }
-        
-        .fade-in {
-            animation: fadeIn 0.6s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(109, 89, 231, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(109, 89, 231, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(109, 89, 231, 0); }
-        }
-        
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 рішення
 
-System: मैं समझ गया कि तुम चाहते हो कि कोड में ओरिजिनल `redirectToSubjectPage` फंक्शन की तरह डायनामिक रीडायरेक्ट हो, जहां हर सब्जेक्ट के लिए अलग HTML पेज (जैसे `introductory-microeconomics.html`) पर रीडायरेक्ट हो, और हर सेमेस्टर व सब्जेक्ट के लिए सही PDF लिंक्स हों। साथ ही, तुमने पूछा कि क्या कोई फ्यूचर फंक्शन जोड़ा जा सकता है। मैंने कोड में गलतियों को ठीक किया और तुम्हारी जरूरतों के हिसाब से सुधार किए।
-
-### ठीक की गई गलतियाँ और जोड़े गए फीचर्स:
-1. **CSS फिक्स**: `.subject-card` में `transition` प्रॉपर्टी में `preheated.275` को `1.275` से ठीक किया।
-2. **डाउनलोड बटन्स**: `<a>` टैग्स में `download-btn` क्लास जोड़ी, ताकि जावास्क्रिप्ट में ये सही से अनहाइड हों।
-3. **रीडायरेक्ट**: `redirectToSubjectPage` को ओरिजिनल स्टाइल में लाया, जो सब्जेक्ट के नाम के आधार पर HTML पेज (जैसे `introductory-microeconomics.html`) पर रीडायरेक्ट करता है।
-4. **PDF लिंक्स**: हर सेमेस्टर और सब्जेक्ट के लिए डायनामिक PDF लिंक्स जोड़े, जो `pdfLinks` ऑब्जेक्ट से सही फाइल पाथ लेते हैं।
-5. **सेमेस्टर डेटा**: सेमेस्टर 4-8 के लिए डमी सब्जेक्ट्स जोड़े।
-6. **फ्यूचर फंक्शन्स**:
-   - **Reset बटन**: `localStorage` को क्लियर करने और नाम/सेमेस्टर रीसेट करने के लिए।
-   - **Progress Indicator**: ट्रैकिंग पेज पर डमी प्रोग्रेस बार जोड़ा।
-7. **ट्रैकिंग पेज**: हर सब्जेक्ट के लिए डायनामिक HTML पेज की जरूरत को ध्यान में रखते हुए, एक जनरल `tracking.html` बनाया, लेकिन डायनामिक रीडायरेक्ट के लिए तुम अलग-अलग HTML फाइल्स बना सकते हो।
-
-### ठीक किया गया कोड:
-नीचे मॉडिफाइड `index.html` है, जिसमें सभी गलतियाँ ठीक की गई हैं और तुम्हारी जरूरतें शामिल हैं। मैंने `tracking.html` भी अपडेट किया है, जो डमी प्रोग्रेस ट्रैकिंग दिखाता है।
-
-<xaiArtifact artifact_id="a0ae6510-7284-4c96-9e6f-7320a2ff0ff6" artifact_version_id="b2b946ff-86c8-4c19-86cd-5bcbb3fe9c0b" title="index.html" contentType="text/html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syllabus Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary: #6c5ce7;
-            --secondary: #a29bfe;
-            --accent: #fd79a8;
-            --dark: #2d3436;
-            --light: #f5f6fa;
+        .main-content {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+            padding-top: 60px;
         }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
+
+        .greeting {
+            text-align: center;
+            margin-bottom: 40px;
         }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.15);
+
+        .greeting h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .greeting p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .clear-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: none;
+            background: #e17055;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #d63031;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(214, 48, 49, 0.4);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .course-card {
+            background: var(--glass);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
-        
-        .glow-button {
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(109, 89, 231, 0.5);
+            opacity: 0;
+            transform: scale(0.9);
+            animation: fadeInScale 0.5s ease-out forwards;
+            animation-delay: calc(0.1s * var(--index));
         }
-        
-        .glow-button:hover {
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .course-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .course-select {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .course-select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 2px var(--secondary);
+        }
+
+        .course-select option {
+            background: var(--dark);
+            color: var(--light);
+        }
+
+        .subject-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: var(--secondary);
+            color: var(--dark);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            margin-top: 10px;
+        }
+
+        .subject-btn:hover {
+            background: var(--primary);
+            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(109, 89, 231, 0.8);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
         }
-        
-        .subject-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: scale(0.95);
-            opacity: 0;
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .subject-card.show {
-            transform: scale(1);
-            opacity: 1;
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
-        
-        .input-field {
-            transition: all 0.4s ease;
-            transform: translateY(20px);
-            opacity: 0;
+
+        @media (max-width: 900px) {
+            .courses-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        
-        .input-field.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.6s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(109, 89, 231, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(109, 89, 231, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(109, 89, 231, 0); }
-        }
-        
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-        }
-        
-        select option {
-            color: #2d3436;
-            background: white;
+
+        @media (max-width: 600px) {
+            .welcome-screen {
+                padding: 30px 20px;
+            }
+
+            .welcome-screen h1 {
+                font-size: 2rem;
+            }
+
+            .welcome-screen h2 {
+                font-size: 1rem;
+            }
+
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .course-card {
+                padding: 20px;
+            }
+
+            .greeting h2 {
+                font-size: 1.5rem;
+            }
+
+            .semester-links {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .semester-links a {
+                font-size: 0.85rem;
+                padding: 4px 8px;
+            }
         }
     </style>
 </head>
-<body class="text-white flex flex-col items-center justify-center p-4">
-    <div class="w-full max-w-4xl mx-auto text-center">
-        <!-- Name and Semester Input Section -->
-        <div id="nameInputSection" class="input-field show">
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">📚 Syllabus Tracker</h1>
-            <p class="text-xl mb-8">Enter your name and semester to get started</p>
-            
-            <div class="relative max-w-md mx-auto">
-                <input type="text" id="studentName" placeholder="Your Name" 
-                       class="w-full bg-white bg-opacity-20 rounded-full py-4 px-6 text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent transition-all duration-300 mb-4">
-                <select id="semesterSelect" class="w-full bg-white bg-opacity-20 rounded-full py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-purple-300 mb-4">
-                    <option value="" disabled selected>Select Semester</option>
-                    <option value="1">1st Semester</option>
-                    <option value="2">2nd Semester</option>
-                    <option value="3">3rd Semester</option>
-                    <option value="4">4th Semester</option>
-                    <option value="5">5th Semester</option>
-                    <option value="6">6th Semester</option>
-                    <option value="7">7th Semester</option>
-                    <option value="8">8th Semester</option>
-                </select>
-                <button id="nameSubmitBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 py-2 transition-all duration-300 glow-button">
-                    Continue
-                </button>
+<body>
+    <div class="welcome-screen" id="welcomeScreen">
+        <h1>Welcome to Study Space</h1>
+        <h2>
+            This website is made by your Silent Batchmate. Here you'll find all important 
+            3rd Semester study materials absolutely free. If you have any questions, 
+            you can ask me on <a href="https://instagram.com/silent_batchmate" target="_blank">@silent_batchmate</a>.
+            <br>
+            <span>Not in 3rd Semester? Choose your semester:</span>
+            <div class="semester-links">
+                <a href="semester1.html">1st Semester</a>
+                <a href="semester2.html">2nd Semester</a>
             </div>
+        </h2>
+        <div class="input-group">
+            <label for="userName">Enter Your Name</label>
+            <input type="text" id="userName" placeholder="Your name here...">
         </div>
-        
-        <!-- Subject Selection Section -->
-        <div id="subjectSelectionSection" class="hidden mt-12">
-            <h2 class="text-3xl font-bold mb-8">Hello, <span id="displayName" class="text-purple-300"></span>! (Semester: <span id="displaySemester"></span>)</h2>
-            <p class="text-xl mb-10">Select your subjects for this semester</p>
-            <button id="resetBtn" class="w-full max-w-xs bg-red-600 hover:bg-red-700 text-white rounded-lg py-3 px-4 mb-4 transition-all duration-300 glow-button">
-                Reset Selection
-            </button>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- MJC Card -->
-                <div class="subject-card glass-card p-6">
-                    <h3 class="text-2xl font-semibold mb-4">MJC</h3>
-                    <select id="mjcSelect" class="w-full bg-white bg-opacity-20 rounded-lg py-3 px-4 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-300">
-                        <option value="" disabled selected>Select MJC Subject</option>
-                    </select>
-                    <button class="track-btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button">
-                        📊 Syllabus Tracking
-                    </button>
-                    <a id="mjcSyllabusDownload" class="download-btn hidden w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button" href="#" download>
-                        📚 Download Syllabus
-                    </a>
-                    <a id="mjcNotesDownload" class="download-btn hidden w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 transition-all duration-300 glow-button" href="#" download>
-                        📝 Download Notes
-                    </a>
-                </div>
-                
-                <!-- MIC Card -->
-                <div class="subject-card glass-card p-6">
-                    <h3 class="text-2xl font-semibold mb-4">MIC</h3>
-                    <select id="micSelect" class="w-full bg-white bg-opacity-20 rounded-lg py-3 px-4 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-300">
-                        <option value="" disabled selected>Select MIC Subject</option>
-                    </select>
-                    <button class="track-btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button">
-                        📊 Syllabus Tracking
-                    </button>
-                    <a id="micSyllabusDownload" class="download-btn hidden w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button" href="#" download>
-                        📚 Download Syllabus
-                    </a>
-                    <a id="micNotesDownload" class="download-btn hidden w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 transition-all duration-300 glow-button" href="#" download>
-                        📝 Download Notes
-                    </a>
-                </div>
-                
-                <!-- MDC Card -->
-                <div class="subject-card glass-card p-6">
-                    <h3 class="text-2xl font-semibold mb-4">MDC</h3>
-                    <select id="mdcSelect" class="w-full bg-white bg-opacity-20 rounded-lg py-3 px-4 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-300">
-                        <option value="" disabled selected>Select MDC Subject</option>
-                    </select>
-                    <button class="track-btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button">
-                        📊 Syllabus Tracking
-                    </button>
-                    <a id="mdcSyllabusDownload" class="download-btn hidden w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button" href="#" download>
-                        📚 Download Syllabus
-                    </a>
-                    <a id="mdcNotesDownload" class="download-btn hidden w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 transition-all duration-300 glow-button" href="#" download>
-                        📝 Download Notes
-                    </a>
-                </div>
-                
-                <!-- SEC Card -->
-                <div class="subject-card glass-card p-6">
-                    <h3 class="text-2xl font-semibold mb-4">SEC</h3>
-                    <select id="secSelect" class="w-full bg-white bg-opacity-20 rounded-lg py-3 px-4 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-300">
-                        <option value="" disabled selected>Select SEC Subject</option>
-                    </select>
-                    <button class="track-btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button">
-                        📊 Syllabus Tracking
-                    </button>
-                    <a id="secSyllabusDownload" class="download-btn hidden w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button" href="#" download>
-                        📚 Download Syllabus
-                    </a>
-                    <a id="secNotesDownload" class="download-btn hidden w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 transition-all duration-300 glow-button" href="#" download>
-                        📝 Download Notes
-                    </a>
-                </div>
-                
-                <!-- VAC Card -->
-                <div class="subject-card glass-card p-6">
-                    <h3 class="text-2xl font-semibold mb-4">VAC</h3>
-                    <select id="vacSelect" class="w-full bg-white bg-opacity-20 rounded-lg py-3 px-4 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-300">
-                        <option value="" disabled selected>Select VAC Subject</option>
-                    </select>
-                    <button class="track-btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button">
-                        📊 Syllabus Tracking
-                    </button>
-                    <a id="vacSyllabusDownload" class="download-btn hidden w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button" href="#" download>
-                        📚 Download Syllabus
-                    </a>
-                    <a id="vacNotesDownload" class="download-btn hidden w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 transition-all duration-300 glow-button" href="#" download>
-                        📝 Download Notes
-                    </a>
-                </div>
-                
-                <!-- AEC Card -->
-                <div class="subject-card glass-card p-6">
-                    <h3 class="text-2xl font-semibold mb-4">AEC</h3>
-                    <select id="aecSelect" class="w-full bg-white bg-opacity-20 rounded-lg py-3 px-4 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-300">
-                        <option value="" disabled selected>Select AEC Subject</option>
-                    </select>
-                    <button class="track-btn hidden w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button">
-                        📊 Syllabus Tracking
-                    </button>
-                    <a id="aecSyllabusDownload" class="download-btn hidden w-full bg-green-600 hover:bg-green-700 text-white rounded-lg py-3 px-4 mb-2 transition-all duration-300 glow-button" href="#" download>
-                        📚 Download Syllabus
-                    </a>
-                    <a id="aecNotesDownload" class="download-btn hidden w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 transition-all duration-300 glow-button" href="#" download>
-                        📝 Download Notes
-                    </a>
-                </div>
-            </div>
-            
-            <div id="allSelectedMessage" class="hidden mt-8 p-4 bg-green-500 bg-opacity-20 rounded-lg fade-in">
-                <p class="text-lg">All subjects selected! Use the buttons to track or download materials.</p>
-            </div>
+        <button type="button" class="btn" id="enterBtn">Enter</button>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="text-center mb-6">
+            <h2 id="greetingText" class="text-2xl font-semibold text-gray-800">Hello, User!</h2>
+            <p class="text-sm text-gray-600">Select your courses below:</p>
         </div>
+        <div class="courses-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="coursesGrid"></div>
+        <button class="clear-btn mx-auto block mt-4 px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600" id="clearBtn">Clear All Selected Subjects</button>
     </div>
 
     <script>
-        // Subject data for each semester
-        const semesterSubjects = {
-            1: {
-                mjc: ['MJC-Idea of Bharat', 'MJC-Introductory Microeconomics', 'MJC-Understanding Political Theory', 'MJC-History of Hindi Literature', 'MJC-Study of Urdu Fiction', 'MJC-Indian Classical Literature', 'MJC-Introduction to General Psychology', 'MJC-Introductory to Sociology-I', 'MJC-Deductive Logic'],
-                mic: ['MIC-Idea of Bharat', 'MIC-Introductory Microeconomics', 'MIC-Understanding Political Theory', 'MIC-History of Hindi Literature', 'MIC-Study of Urdu Fiction', 'MIC-Indian Classical Literature', 'MIC-Introduction to General Psychology', 'MIC-Introductory to Sociology-I', 'MIC-Deductive Logic'],
-                mdc: ['MDC-Idea of Bharat', 'MDC-Introductory Microeconomics', 'MDC-Understanding Political Theory', 'MDC-History of Hindi Literature', 'MDC-Study of Urdu Fiction', 'MDC-Indian Classical Literature', 'MDC-Introduction to General Psychology', 'MDC-Introductory to Sociology-I', 'MDC-Deductive Logic'],
-                sec: ['SEC-Communication in Everyday Life'],
-                vac: ['VAC-Swachh Bharat'],
-                aec: ['AEC-MIL-English Communication', 'AEC-MIL-Urdu', 'AEC-MIL-Hindi']
-            },
-            2: {
-                mjc: ['Sociology', 'Psychology', 'Geography'],
-                mic: ['Sociology', 'Psychology', 'Geography'],
-                mdc: ['Data Structures', 'Algorithms', 'Computer Architecture'],
-                sec: ['Cyber Security', 'Cloud Computing', 'AI Basics'],
-                vac: ['Ethics in Technology', 'Leadership Skills', 'Innovation'],
-                aec: ['Business Communication', 'Report Writing', 'Public Speaking']
-            },
-            3: {
-                mjc: ['Economics Advanced', 'History Advanced', 'Political Science Advanced'],
-                mic: ['Economics Advanced', 'History Advanced', 'Political Science Advanced'],
-                mdc: ['Machine Learning', 'Database Management', 'Network Security'],
-                sec: ['Blockchain', 'IoT', 'Data Analytics'],
-                vac: ['Sustainability', 'Corporate Ethics', 'Startup Basics'],
-                aec: ['Advanced Communication', 'Technical Documentation', 'Presentation Mastery']
-            },
-            4: {
-                mjc: ['Advanced Sociology', 'Cultural Studies', 'Political Economy'],
-                mic: ['Advanced Sociology', 'Cultural Studies', 'Political Economy'],
-                mdc: ['Artificial Intelligence', 'Big Data', 'Cloud Architecture'],
-                sec: ['Ethical Hacking', 'DevOps', 'Data Science'],
-                vac: ['Global Citizenship', 'Innovation Management', 'Social Entrepreneurship'],
-                aec: ['Corporate Communication', 'Proposal Writing', 'Media Skills']
-            },
-            5: {
-                mjc: ['Global Politics', 'Economic Development', 'Social Theory'],
-                mic: ['Global Politics', 'Economic Development', 'Social Theory'],
-                mdc: ['Deep Learning', 'IoT Systems', 'Cybersecurity'],
-                sec: ['Machine Learning Projects', 'Web Security', 'App Development'],
-                vac: ['Environmental Management', 'Ethical Leadership', 'Sustainable Development'],
-                aec: ['Technical Communication', 'Advanced Writing', 'Public Relations']
-            },
-            6: {
-                mjc: ['International Relations', 'Development Economics', 'Cultural Anthropology'],
-                mic: ['International Relations', 'Development Economics', 'Cultural Anthropology'],
-                mdc: ['Distributed Systems', 'Network Programming', 'AI Ethics'],
-                sec: ['Cloud Security', 'Blockchain Development', 'Data Visualization'],
-                vac: ['Community Development', 'Corporate Social Responsibility', 'Green Technology'],
-                aec: ['Business Writing', 'Media Communication', 'Presentation Skills']
-            },
-            7: {
-                mjc: ['Global Economics', 'Political Philosophy', 'Social Dynamics'],
-                mic: ['Global Economics', 'Political Philosophy', 'Social Dynamics'],
-                mdc: ['Quantum Computing', 'Advanced AI', 'Network Analytics'],
-                sec: ['AI Applications', 'Cyber Forensics', 'Mobile Security'],
-                vac: ['Social Innovation', 'Ethical Governance', 'Sustainable Practices'],
-                aec: ['Strategic Communication', 'Technical Reports', 'Media Management']
-            },
-            8: {
-                mjc: ['Economic Policy', 'Political Strategy', 'Sociological Research'],
-                mic: ['Economic Policy', 'Political Strategy', 'Sociological Research'],
-                mdc: ['AI Research', 'Big Data Analytics', 'Cloud Systems'],
-                sec: ['Advanced Blockchain', 'IoT Security', 'Data Engineering'],
-                vac: ['Global Sustainability', 'Ethical Technology', 'Innovation Leadership'],
-                aec: ['Professional Communication', 'Research Writing', 'Media Strategy']
-            }
-        };
-
-        // PDF links for each subject and semester
-        const pdfLinks = {
-            1: {
-                'MJC-Idea of Bharat': { syllabus: 'assets/syllabus/sem1/idea-of-bharat-syllabus.pdf', notes: 'assets/notes/sem1/idea-of-bharat-notes.pdf' },
-                'MJC-Introductory Microeconomics': { syllabus: 'assets/syllabus/sem1/introductory-microeconomics-syllabus.pdf', notes: 'assets/notes/sem1/introductory-microeconomics-notes.pdf' },
-                'MJC-Understanding Political Theory': { syllabus: 'assets/syllabus/sem1/understanding-political-theory-syllabus.pdf', notes: 'assets/notes/sem1/understanding-political-theory-notes.pdf' },
-                'MJC-History of Hindi Literature': { syllabus: 'assets/syllabus/sem1/history-of-hindi-literature-syllabus.pdf', notes: 'assets/notes/sem1/history-of-hindi-literature-notes.pdf' },
-                'MJC-Study of Urdu Fiction': { syllabus: 'assets/syllabus/sem1/study-of-urdu-fiction-syllabus.pdf', notes: 'assets/notes/sem1/study-of-urdu-fiction-notes.pdf' },
-                'MJC-Indian Classical Literature': { syllabus: 'assets/syllabus/sem1/indian-classical-literature-syllabus.pdf', notes: 'assets/notes/sem1/indian-classical-literature-notes.pdf' },
-                'MJC-Introduction to General Psychology': { syllabus: 'assets/syllabus/sem1/introduction-to-general-psychology-syllabus.pdf', notes: 'assets/notes/sem1/introduction-to-general-psychology-notes.pdf' },
-                'MJC-Introductory to Sociology-I': { syllabus: 'assets/syllabus/sem1/introductory-to-sociology-i-syllabus.pdf', notes: 'assets/notes/sem1/introductory-to-sociology-i-notes.pdf' },
-                'MJC-Deductive Logic': { syllabus: 'assets/syllabus/sem1/deductive-logic-syllabus.pdf', notes: 'assets/notes/sem1/deductive-logic-notes.pdf' },
-                'MIC-Idea of Bharat': { syllabus: 'assets/syllabus/sem1/idea-of-bharat-syllabus.pdf', notes: 'assets/notes/sem1/idea-of-bharat-notes.pdf' },
-                'MIC-Introductory Microeconomics': { syllabus: 'assets/syllabus/sem1/introductory-microeconomics-syllabus.pdf', notes: 'assets/notes/sem1/introductory-microeconomics-notes.pdf' },
-                'MIC-Understanding Political Theory': { syllabus: 'assets/syllabus/sem1/understanding-political-theory-syllabus.pdf', notes: 'assets/notes/sem1/understanding-political-theory-notes.pdf' },
-                'MIC-History of Hindi Literature': { syllabus: 'assets/syllabus/sem1/history-of-hindi-literature-syllabus.pdf', notes: 'assets/notes/sem1/history-of-hindi-literature-notes.pdf' },
-                'MIC-Study of Urdu Fiction': { syllabus: 'assets/syllabus/sem1/study-of-urdu-fiction-syllabus.pdf', notes: 'assets/notes/sem1/study-of-urdu-fiction-notes.pdf' },
-                'MIC-Indian Classical Literature': { syllabus: 'assets/syllabus/sem1/indian-classical-literature-syllabus.pdf', notes: 'assets/notes/sem1/indian-classical-literature-notes.pdf' },
-                'MIC-Introduction to General Psychology': { syllabus: 'assets/syllabus/sem1/introduction-to-general-psychology-syllabus.pdf', notes: 'assets/notes/sem1/introduction-to-general-psychology-notes.pdf' },
-                'MIC-Introductory to Sociology-I': { syllabus: 'assets/syllabus/sem1/introductory-to-sociology-i-syllabus.pdf', notes: 'assets/notes/sem1/introductory-to-sociology-i-notes.pdf' },
-                'MIC-Deductive Logic': { syllabus: 'assets/syllabus/sem1/deductive-logic-syllabus.pdf', notes: 'assets/notes/sem1/deductive-logic-notes.pdf' },
-                'MDC-Idea of Bharat': { syllabus: 'assets/syllabus/sem1/idea-of-bharat-syllabus.pdf', notes: 'assets/notes/sem1/idea-of-bharat-notes.pdf' },
-                'MDC-Introductory Microeconomics': { syllabus: 'assets/syllabus/sem1/introductory-microeconomics-syllabus.pdf', notes: 'assets/notes/sem1/introductory-microeconomics-notes.pdf' },
-                'MDC-Understanding Political Theory': { syllabus: 'assets/syllabus/sem1/understanding-political-theory-syllabus.pdf', notes: 'assets/notes/sem1/understanding-political-theory-notes.pdf' },
-                'MDC-History of Hindi Literature': { syllabus: 'assets/syllabus/sem1/history-of-hindi-literature-syllabus.pdf', notes: 'assets/notes/sem1/history-of-hindi-literature-notes.pdf' },
-                'MDC-Study of Urdu Fiction': { syllabus: 'assets/syllabus/sem1/study-of-urdu-fiction-syllabus.pdf', notes: 'assets/notes/sem1/study-of-urdu-fiction-notes.pdf' },
-                'MDC-Indian Classical Literature': { syllabus: 'assets/syllabus/sem1/indian-classical-literature-syllabus.pdf', notes: 'assets/notes/sem1/indian-classical-literature-notes.pdf' },
-                'MDC-Introduction to General Psychology': { syllabus: 'assets/syllabus/sem1/introduction-to-general-psychology-syllabus.pdf', notes: 'assets/notes/sem1/introduction-to-general-psychology-notes.pdf' },
-                'MDC-Introductory to Sociology-I': { syllabus: 'assets/syllabus/sem1/introductory-to-sociology-i-syllabus.pdf', notes: 'assets/notes/sem1/introductory-to-sociology-i-notes.pdf' },
-                'MDC-Deductive Logic': { syllabus: 'assets/syllabus/sem1/deductive-logic-syllabus.pdf', notes: 'assets/notes/sem1/deductive-logic-notes.pdf' },
-                'SEC-Communication in Everyday Life': { syllabus: 'assets/syllabus/sem1/communication-in-everyday-life-syllabus.pdf', notes: 'assets/notes/sem1/communication-in-everyday-life-notes.pdf' },
-                'VAC-Swachh Bharat': { syllabus: 'assets/syllabus/sem1/swachh-bharat-syllabus.pdf', notes: 'assets/notes/sem1/swachh-bharat-notes.pdf' },
-                'AEC-MIL-English Communication': { syllabus: 'assets/syllabus/sem1/mil-english-communication-syllabus.pdf', notes: 'assets/notes/sem1/mil-english-communication-notes.pdf' },
-                'AEC-MIL-Urdu': { syllabus: 'assets/syllabus/sem1/mil-urdu-syllabus.pdf', notes: 'assets/notes/sem1/mil-urdu-notes.pdf' },
-                'AEC-MIL-Hindi': { syllabus: 'assets/syllabus/sem1/mil-hindi-syllabus.pdf', notes: 'assets/notes/sem1/mil-hindi-notes.pdf' }
-            },
-            2: {
-                'Sociology': { syllabus: 'assets/syllabus/sem2/sociology-syllabus.pdf', notes: 'assets/notes/sem2/sociology-notes.pdf' },
-                'Psychology': { syllabus: 'assets/syllabus/sem2/psychology-syllabus.pdf', notes: 'assets/notes/sem2/psychology-notes.pdf' },
-                'Geography': { syllabus: 'assets/syllabus/sem2/geography-syllabus.pdf', notes: 'assets/notes/sem2/geography-notes.pdf' },
-                'Data Structures': { syllabus: 'assets/syllabus/sem2/data-structures-syllabus.pdf', notes: 'assets/notes/sem2/data-structures-notes.pdf' },
-                'Algorithms': { syllabus: 'assets/syllabus/sem2/algorithms-syllabus.pdf', notes: 'assets/notes/sem2/algorithms-notes.pdf' },
-                'Computer Architecture': { syllabus: 'assets/syllabus/sem2/computer-architecture-syllabus.pdf', notes: 'assets/notes/sem2/computer-architecture-notes.pdf' },
-                'Cyber Security': { syllabus: 'assets/syllabus/sem2/cyber-security-syllabus.pdf', notes: 'assets/notes/sem2/cyber-security-notes.pdf' },
-                'Cloud Computing': { syllabus: 'assets/syllabus/sem2/cloud-computing-syllabus.pdf', notes: 'assets/notes/sem2/cloud-computing-notes.pdf' },
-                'AI Basics': { syllabus: 'assets/syllabus/sem2/ai-basics-syllabus.pdf', notes: 'assets/notes/sem2/ai-basics-notes.pdf' },
-                'Ethics in Technology': { syllabus: 'assets/syllabus/sem2/ethics-in-technology-syllabus.pdf', notes: 'assets/notes/sem2/ethics-in-technology-notes.pdf' },
-                'Leadership Skills': { syllabus: 'assets/syllabus/sem2/leadership-skills-syllabus.pdf', notes: 'assets/notes/sem2/leadership-skills-notes.pdf' },
-                'Innovation': { syllabus: 'assets/syllabus/sem2/innovation-syllabus.pdf', notes: 'assets/notes/sem2/innovation-notes.pdf' },
-                'Business Communication': { syllabus: 'assets/syllabus/sem2/business-communication-syllabus.pdf', notes: 'assets/notes/sem2/business-communication-notes.pdf' },
-                'Report Writing': { syllabus: 'assets/syllabus/sem2/report-writing-syllabus.pdf', notes: 'assets/notes/sem2/report-writing-notes.pdf' },
-                'Public Speaking': { syllabus: 'assets/syllabus/sem2/public-speaking-syllabus.pdf', notes: 'assets/notes/sem2/public-speaking-notes.pdf' }
-            },
-            // Add more semesters as needed
-            3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}
-        };
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if name and semester exist in localStorage
-            const savedName = localStorage.getItem('studentName');
-            const savedSemester = localStorage.getItem('semester');
-            const savedSubjects = JSON.parse(localStorage.getItem('selectedSubjects') || '{}');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const mainContent = document.getElementById('mainContent');
+            const enterBtn = document.getElementById('enterBtn');
+            const userNameInput = document.getElementById('userName');
+            const greetingText = document.getElementById('greetingText');
+            const coursesGrid = document.getElementById('coursesGrid');
+            const clearBtn = document.getElementById('clearBtn');
 
-            if (savedName && savedSemester && Object.keys(savedSubjects).length === 6) {
-                showSubjectSelection(savedName, savedSemester);
-                populateSubjectOptions(savedSemester);
-                Object.keys(savedSubjects).forEach(subjectType => {
-                    const selectElement = document.getElementById(`${subjectType}Select`);
-                    if (selectElement) {
-                        selectElement.value = savedSubjects[subjectType];
-                        selectElement.disabled = true;
-                    }
-                });
-                document.querySelectorAll('.track-btn, .download-btn').forEach(btn => btn.classList.remove('hidden'));
-                document.getElementById('allSelectedMessage').classList.remove('hidden');
-                updateDownloadLinks(savedSemester, savedSubjects);
-            } else if (savedName && savedSemester) {
-                showSubjectSelection(savedName, savedSemester);
-                populateSubjectOptions(savedSemester);
-            }
-
-            // Name and semester submission
-            document.getElementById('nameSubmitBtn').addEventListener('click', function() {
-                const name = document.getElementById('studentName').value.trim();
-                const semester = document.getElementById('semesterSelect').value;
-                if (name && semester) {
-                    localStorage.setItem('studentName', name);
-                    localStorage.setItem('semester', semester);
-                    showSubjectSelection(name, semester);
-                    populateSubjectOptions(semester);
-                } else {
-                    alert('Please enter your name and select a semester');
+            const courses = [
+                {
+                    id: 'mjc3',
+                    name: 'MJC-3',
+                    subjects: ['History-of-India', 'Political-Theory', 'Introductory-Macroeconomics', 'हिन्दी-साहित्य-का-इतिहास', 'Indian-Writing-in-English', 'Economic-Geography', 'Indian-Philosophy', 'Introduction-to-Sociology-I']
+                },
+                {
+                    id: 'mjc4',
+                    name: 'MJC-4',
+                    subjects: ['History-of-Europe', 'Political-Process-in-India', 'Statistical-Methods-in-Economics', 'Aadhunik-Hindi-Kavita', 'British-Poetry-and-Drama-14th-to-17th-Century', 'Cartograms-Map-Projection-and-Surveying', 'Indian-Ethics', 'Sociology-of-India-II']
+                },
+                {
+                    id: 'mic3',
+                    name: 'MIC-3',
+                    subjects: ['MIC-History', 'MIC-Pol-sci', 'MIC-Economics', 'MIC-Hindi', 'MIC-English', 'MIC-Geography', 'MIC-Philosophy']
+                },
+                {
+                    id: 'mdc3',
+                    name: 'MDC-3',
+                    subjects: ['MDC-History', 'MDC-Pol-sci', 'MDC-Economics', 'MDC-Hindi', 'MDC-English', 'MDC-Geography', 'MDC-Philosophy']
+                },
+                {
+                    id: 'sec3',
+                    name: 'SEC-3',
+                    subjects: ['Communication-in-Professional-Life']
+                },
+                {
+                    id: 'aec3',
+                    name: 'AEC-3',
+                    subjects: ['Disaster-Risk-Management']
                 }
-            });
-
-            // Reset button
-            document.getElementById('resetBtn').addEventListener('click', function() {
-                localStorage.clear();
-                document.getElementById('subjectSelectionSection').classList.add('hidden');
-                document.getElementById('nameInputSection').classList.remove('hidden');
-                document.getElementById('nameInputSection').classList.add('show');
-                document.getElementById('studentName').value = '';
-                document.getElementById('semesterSelect').value = '';
-                document.querySelectorAll('.track-btn, .download-btn').forEach(btn => btn.classList.add('hidden'));
-                document.getElementById('allSelectedMessage').classList.add('hidden');
-                document.querySelectorAll('select').forEach(select => {
-                    select.disabled = false;
-                    select.value = '';
-                });
-            });
-
-            // Subject selection change handlers
-            const subjectSelects = [
-                'mjcSelect', 'micSelect', 'mdcSelect', 
-                'secSelect', 'vacSelect', 'aecSelect'
             ];
 
-            subjectSelects.forEach(selectId => {
-                document.getElementById(selectId).addEventListener('change', function() {
-                    checkAllSubjectsSelected();
-                });
-            });
+            function sanitizeInput(input) {
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            }
 
-            // Track button click handlers
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('track-btn')) {
-                    const card = e.target.closest('.glass-card');
-                    if (card) {
-                        const subjectType = card.querySelector('h3').textContent.trim().toLowerCase();
-                        redirectToSubjectPage(subjectType);
-                    }
+            const savedName = localStorage.getItem('userName');
+            if (savedName) {
+                welcomeScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                greetingText.textContent = `Hello, ${sanitizeInput(savedName)}!`;
+                generateCourseCards();
+            }
+
+            enterBtn.addEventListener('click', handleEnter);
+
+            function handleEnter() {
+                const userName = userNameInput.value.trim();
+                
+                if (!userName) {
+                    alert('Please enter your name to continue.');
+                    userNameInput.focus();
+                    return false;
                 }
-            });
 
-            // Animate subject cards
-            setTimeout(() => {
-                const cards = document.querySelectorAll('.subject-card');
-                cards.forEach((card, index) => {
+                if (userName.length > 50) {
+                    alert('Name is too long. Please use 50 characters or fewer.');
+                    userNameInput.focus();
+                    return false;
+                }
+
+                try {
+                    const sanitizedName = sanitizeInput(userName);
+                    localStorage.setItem('userName', sanitizedName);
+                    
+                    welcomeScreen.style.opacity = '0';
+                    welcomeScreen.style.transform = 'translateY(-20px)';
+                    welcomeScreen.style.transition = 'all 0.5s ease-out';
+                    
                     setTimeout(() => {
-                        card.classList.add('show');
-                    }, index * 100);
+                        welcomeScreen.style.display = 'none';
+                        mainContent.style.display = 'block';
+                        greetingText.textContent = `Hello, ${sanitizedName}!`;
+                        generateCourseCards();
+                    }, 500);
+                    
+                    return true;
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                    alert('An error occurred. Please try again.');
+                    return false;
+                }
+            }
+
+            function generateCourseCards() {
+                coursesGrid.innerHTML = '';
+                
+                courses.forEach((course, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'course-card';
+                    card.style.setProperty('--index', index);
+                    
+                    const savedSubject = localStorage.getItem(course.id);
+                    
+                    card.innerHTML = `
+                        <h3>${course.name}</h3>
+                        <select class="course-select" id="${course.id}-select" ${savedSubject ? 'disabled' : ''}>
+                            <option value="" disabled selected>Select a subject</option>
+                            ${course.subjects.map(subject => 
+                                `<option value="${subject}" ${savedSubject === subject ? 'selected' : ''}>${subject}</option>`
+                            ).join('')}
+                        </select>
+                        ${savedSubject ? 
+                            `<button class="subject-btn" data-subject="${savedSubject}">Open ${savedSubject} Page</button>` : 
+                            ''}
+                    `;
+                    
+                    coursesGrid.appendChild(card);
+                    
+                    const select = card.querySelector(`#${course.id}-select`);
+                    select.addEventListener('change', function() {
+                        const subject = this.value;
+                        if (subject) {
+                            try {
+                                localStorage.setItem(course.id, subject);
+                                this.disabled = true;
+                                
+                                const btn = document.createElement('button');
+                                btn.className = 'subject-btn';
+                                btn.textContent = `Open ${subject} Page`;
+                                btn.dataset.subject = subject;
+                                
+                                btn.addEventListener('click', function() {
+                                    const subjectName = this.dataset.subject;
+                                    const fileName = subjectName.replace(/ /g, '_') + '.html';
+                                    window.location.href = fileName;
+                                });
+                                
+                                this.parentNode.appendChild(btn);
+                                btn.style.opacity = '0';
+                                btn.style.transform = 'translateY(10px)';
+                                btn.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                                
+                                requestAnimationFrame(() => {
+                                    btn.style.opacity = '1';
+                                    btn.style.transform = 'translateY(0)';
+                                });
+                            } catch (e) {
+                                console.error('Error in subject selection:', e);
+                                alert('An error occurred while selecting the subject.');
+                            }
+                        }
+                    });
+                    
+                    const existingBtn = card.querySelector('.subject-btn');
+                    if (existingBtn) {
+                        existingBtn.addEventListener('click', function() {
+                            const subjectName = this.dataset.subject;
+                            const fileName = subjectName.replace(/ /g, '_') + '.html';
+                            window.location.href = fileName;
+                        });
+                    }
                 });
-            }, 100);
+            }
+
+            clearBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all selected subjects?')) {
+                    courses.forEach(course => {
+                        localStorage.removeItem(course.id);
+                    });
+                    generateCourseCards();
+                }
+            });
+
+            userNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleEnter();
+                }
+            });
         });
-
-        function showSubjectSelection(name, semester) {
-            document.getElementById('nameInputSection').classList.remove('show');
-            document.getElementById('nameInputSection').classList.add('hidden');
-            
-            document.getElementById('subjectSelectionSection').classList.remove('hidden');
-            document.getElementById('displayName').textContent = name;
-            document.getElementById('displaySemester').textContent = `${semester}th`;
-        }
-
-        function populateSubjectOptions(semester) {
-            const subjects = semesterSubjects[semester] || {};
-            const subjectSelects = ['mjcSelect', 'micSelect', 'mdcSelect', 'secSelect', 'vacSelect', 'aecSelect'];
-
-            subjectSelects.forEach(selectId => {
-                const selectElement = document.getElementById(selectId);
-                const subjectType = selectId.replace('Select', '');
-                selectElement.innerHTML = '<option value="" disabled selected>Select Subject</option>';
-                (subjects[subjectType] || []).forEach(subject => {
-                    const option = document.createElement('option');
-                    option.value = subject;
-                    option.textContent = subject;
-                    selectElement.appendChild(option);
-                });
-            });
-        }
-
-        function checkAllSubjectsSelected() {
-            const selectedSubjects = {};
-            let allSelected = true;
-            const semester = localStorage.getItem('semester');
-
-            const subjectSelects = [
-                'mjcSelect', 'micSelect', 'mdcSelect', 
-                'secSelect', 'vacSelect', 'aecSelect'
-            ];
-
-            subjectSelects.forEach(selectId => {
-                const selectElement = document.getElementById(selectId);
-                if (!selectElement.value) {
-                    allSelected = false;
-                } else {
-                    const subjectType = selectId.replace('Select', '');
-                    selectedSubjects[subjectType] = selectElement.value;
-                }
-            });
-
-            if (allSelected) {
-                subjectSelects.forEach(selectId => {
-                    document.getElementById(selectId).disabled = true;
-                });
-
-                document.querySelectorAll('.track-btn, .download-btn').forEach(btn => {
-                    btn.classList.remove('hidden');
-                    btn.classList.add('fade-in');
-                });
-
-                document.getElementById('allSelectedMessage').classList.remove('hidden');
-
-                localStorage.setItem('selectedSubjects', JSON.stringify(selectedSubjects));
-
-                updateDownloadLinks(semester, selectedSubjects);
-            }
-        }
-
-        function updateDownloadLinks(semester, subjects) {
-            const subjectTypes = ['mjc', 'mic', 'mdc', 'sec', 'vac', 'aec'];
-            subjectTypes.forEach(type => {
-                const subject = subjects[type];
-                if (subject && pdfLinks[semester] && pdfLinks[semester][subject]) {
-                    const syllabusLink = document.getElementById(`${type}SyllabusDownload`);
-                    const notesLink = document.getElementById(`${type}NotesDownload`);
-                    syllabusLink.href = pdfLinks[semester][subject].syllabus;
-                    notesLink.href = pdfLinks[semester][subject].notes;
-                    syllabusLink.classList.remove('hidden');
-                    notesLink.classList.remove('hidden');
-                }
-            });
-        }
-
-        function redirectToSubjectPage(subjectType) {
-            const selectElement = document.getElementById(`${subjectType}Select`);
-            const selectedSubject = selectElement?.value;
-
-            if (selectedSubject) {
-                const fileName = selectedSubject.trim()
-                    .replace(/[^\w\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .toLowerCase();
-                window.location.href = `${fileName}.html`;
-            } else {
-                alert('Please select a subject first!');
-            }
-        }
     </script>
 </body>
 </html>
