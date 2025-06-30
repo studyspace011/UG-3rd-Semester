@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subject Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      min-height: 100vh;
+      padding: 40px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to right, #ffffff, #f5f6fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 40px;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 30px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      color: #f1f1f1;
+      font-size: 0.85rem;
+    }
+
+    .social-links {
+      margin: 20px 0 10px;
+    }
+
+    .social-links a {
+      margin: 0 10px;
+      color: #fd79a8;
+      font-size: 1.1rem;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .social-links a:hover {
+      color: #ffffff;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.6rem;
+        text-align: center;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .card h2 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold header-text">History of India</h1>
+  <p class="text-sm text-gray-300"></p>
+
+  <div class="card-container">
+    <a href="https://docs.google.com/document/d/1xHkLP43s74U64LGAgAdd8sN-D3wbLveBOna-mjdO4ZU/export?format=pdf" class="card"><h2>📚 Syllabus</h2></a>
+    <a href="https://docs.google.com/document/d/18oNjgn5PXGtFl2GLVmDZWMQcVH3ZkXByD8m3kZG9FMs/export?format=pdf" class="card"><h2>📝 Notes</h2></a>
+    <a href="mcq-test.html" class="card"><h2>🧠 MCQ Test</h2></a>
+    <a href="vvi-topics.html" class="card"><h2>🔥 VVI Topics (Not Available)</h2></a>
+  </div>
+
+  <footer>
+    <div class="social-links">
+      <a href="https://www.instagram.com/silent_batchmate" target="_blank"><i class="fab fa-instagram"></i> @silent_batchmate</a>
+      <a href="mailto:studypace.ba@gmail.com"><i class="fas fa-envelope"></i> Email</a>
+    </div>
+    <p>If you have any kind of doubt, toh message kr lo yrr,<br>main kosis krunga jawab dene ki — bas faltu questions mt krna</p>
+    <p style="margin-top: 15px;">© 2025 StudyPace. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
