@@ -112,7 +112,7 @@
         .input-group {
             width: 100%;
             max-width: 400px;
-            margin: 30px 0;
+            margin: 15px 0;
         }
 
         .input-group label {
@@ -122,7 +122,7 @@
             font-weight: 500;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 12px 20px;
             border-radius: 50px;
@@ -133,7 +133,7 @@
             transition: all 0.3s ease;
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             background: rgba(255, 255, 255, 0.3);
             box-shadow: 0 0 0 2px var(--accent);
@@ -143,10 +143,15 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        .input-group select option {
+            background: var(--dark);
+            color: var(--light);
+        }
+
         .btn {
             padding: 12px 30px;
             border-radius: 50px;
-            border: none;
+            border: 1px solid var(--glass-border);
             background: var(--accent);
             color: white;
             font-size: 1rem;
@@ -366,17 +371,47 @@
                 <a href="semester2.html">2nd Semester</a>
             </div>
         </h2>
-        <div class="input-group">
-            <label for="userName">Enter Your Name</label>
-            <input type="text" id="userName" placeholder="Your name here...">
-        </div>
-        <button type="button" class="btn" id="enterBtn">Enter</button>
+        <form id="contactForm" onsubmit="return postToGoogle(event);">
+            <div class="input-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="entry.668301457" placeholder="Your name here..." required>
+            </div>
+            <div class="input-group">
+                <label for="department">Your Department</label>
+                <select id="department" name="entry.719129946" required>
+                    <option value="" disabled selected>Select your department</option>
+                    <option value="Pol-Sci-3">Political Science</option>
+                    <option value="History-3">History</option>
+                    <option value="Economics-3">Economics</option>
+                    <option value="English-3">English</option>
+                    <option value="Hindi-3">Hindi</option>
+                    <option value="Urdu-3">Urdu</option>
+                    <option value="Philosophy-3">Philosophy</option>
+                    <option value="Sociology-3">Sociology</option>
+                    <option value="Psychology-3">Psychology</option>
+                    <option value="Zoology-3">Zoology</option>
+                    <option value="Chemistry-3">Chemistry</option>
+                    <option value="Physics-3">Physics</option>
+                    <option value="Mathematics-3">Mathematics</option>
+                    <option value="Botany-3">Botany</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="rollNo">Your Roll Number</label>
+                <input type="text" id="rollNo" name="entry.2057467438" placeholder="Your roll number..." required>
+            </div>
+            <div class="input-group">
+                <label for="mobile">Your Mobile Number</label>
+                <input type="tel" id="mobile" name="entry.984676845" placeholder="Your mobile number..." required>
+            </div>
+            <button type="submit" class="btn">Enter</button>
+        </form>
     </div>
 
     <div class="main-content" id="mainContent">
         <div class="greeting">
-            <h2 id="greetingText">Hlw, User!</ narrative
-            <p>Select your courses below:</p>
+            <h2 id="greetingText">Hello, User!</h2>
+            <p>Choose your courses below:</p>
         </div>
         <div class="courses-grid" id="coursesGrid"></div>
         <button class="clear-btn" id="clearBtn">Clear All Selected Subjects</button>
@@ -386,8 +421,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const welcomeScreen = document.getElementById('welcomeScreen');
             const mainContent = document.getElementById('mainContent');
-            const enterBtn = document.getElementById('enterBtn');
-            const userNameInput = document.getElementById('userName');
             const greetingText = document.getElementById('greetingText');
             const coursesGrid = document.getElementById('coursesGrid');
             const clearBtn = document.getElementById('clearBtn');
@@ -396,7 +429,7 @@
                 {
                     id: 'mjc3',
                     name: 'MJC-3',
-                    subjects: ['Pol-Sci-3', 'History-3', 'Economics-3', 'English-3', 'Hindi-3', 'Urdu-3', 'Philosophy-3', 'Sociology-3', 'Psychology-3', 'Zoology-3', 'Chemistry-4', 'Physics-3', 'Mathematics-3', 'Botany-3']
+                    subjects: ['Pol-Sci-3', 'History-3', 'Economics-3', 'English-3', 'Hindi-3', 'Urdu-3', 'Philosophy-3', 'Sociology-3', 'Psychology-3', 'Zoology-3', 'Chemistry-3', 'Physics-3', 'Mathematics-3', 'Botany-3']
                 },
                 {
                     id: 'mjc4',
@@ -440,50 +473,45 @@
                 generateCourseCards();
             }
 
-            // Handle Enter button click
-            enterBtn.addEventListener('click', handleEnter);
+            function postToGoogle(event) {
+                if (event) event.preventDefault(); // Stop default behavior
 
-            // Handle Enter key press
-            userNameInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleEnter();
-                }
-            });
+                const name = document.getElementById('name').value.trim();
+                const department = document.getElementById('department').value.trim();
+                const rollNo = document.getElementById('rollNo').value.trim();
+                const mobile = document.getElementById('mobile').value.trim();
 
-            function handleEnter() {
-                const userName = userNameInput.value.trim();
-                
-                if (!userName) {
-                    alert('Please enter your name to continue.');
-                    userNameInput.focus();
-                    return;
+                if (!name || !department || !rollNo || !mobile) {
+                    alert("Please fill all fields.");
+                    return false;
                 }
 
-                if (userName.length > 50) {
-                    alert('Name is too long. Please use 50 characters or fewer.');
-                    userNameInput.focus();
-                    return;
-                }
+                const formData = new FormData();
+                formData.append("entry.668301457", name);
+                formData.append("entry.719129946", department);
+                formData.append("entry.2057467438", rollNo);
+                formData.append("entry.984676845", mobile);
 
-                try {
-                    const sanitizedName = sanitizeInput(userName);
-                    localStorage.setItem('userName', sanitizedName);
-                    
-                    welcomeScreen.style.opacity = '0';
-                    welcomeScreen.style.transform = 'translateY(-20px)';
-                    welcomeScreen.style.transition = 'all 0.5s ease-out';
-                    
-                    setTimeout(() => {
-                        welcomeScreen.style.display = 'none';
-                        mainContent.style.display = 'block';
-                        greetingText.textContent = `Hello, ${sanitizedName}!`;
-                        generateCourseCards();
-                    }, 500);
-                } catch (e) {
-                    console.error('Error saving to localStorage:', e);
-                    alert('An error occurred. Please try again.');
-                }
+                fetch("https://docs.google.com/forms/d/e/1FAIpQLSdZAGfjU4jjojVuWEfZ8QbErl0yzXLZBzXWvh5FnLHp2vbrkw/formResponse", {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: formData
+                }).then(() => {
+                    localStorage.setItem("userName", name);
+                    document.getElementById("welcomeScreen").style.display = "none";
+                    document.getElementById("mainContent").style.display = "block";
+                    document.getElementById("greetingText").textContent = `Hello, ${name}!`;
+                    generateCourseCards();
+                }).catch((error) => {
+                    console.error("Error!", error);
+                    alert("Submission failed.");
+                });
+
+                return false;
             }
+
+            // Optional but safe: Add event listener
+            document.getElementById("contactForm").addEventListener("submit", postToGoogle);
 
             function generateCourseCards() {
                 coursesGrid.innerHTML = '';
