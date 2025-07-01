@@ -374,12 +374,12 @@
     </div>
 
     <div class="main-content" id="mainContent">
-        <div class="text-center mb-6">
-            <h2 id="greetingText" class="text-2xl font-semibold text-gray-800">Hello, User!</h2>
-            <p class="text-sm text-gray-600">Select your courses below:</p>
+        <div class="greeting">
+            <h2 id="greetingText">Hello, User!</ narrative
+            <p>Select your courses below:</p>
         </div>
-        <div class="courses-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="coursesGrid"></div>
-        <button class="clear-btn mx-auto block mt-4 px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium hover:bg-red-600" id="clearBtn">Clear All Selected Subjects</button>
+        <div class="courses-grid" id="coursesGrid"></div>
+        <button class="clear-btn" id="clearBtn">Clear All Selected Subjects</button>
     </div>
 
     <script>
@@ -396,12 +396,12 @@
                 {
                     id: 'mjc3',
                     name: 'MJC-3',
-                    subjects: ['Pol-Sci-3', 'History-3', 'Economics-3', 'English-3', 'Hindi-3', 'Urdu-3, 'Philosophy-3', 'Sociology-3', 'Psychology-3', 'Zoology-3', 'Chemistry', 'Physics-3', 'Mathematics-3', 'Botany-3']
+                    subjects: ['Pol-Sci-3', 'History-3', 'Economics-3', 'English-3', 'Hindi-3', 'Urdu-3', 'Philosophy-3', 'Sociology-3', 'Psychology-3', 'Zoology-3', 'Chemistry', 'Physics-3', 'Mathematics-3', 'Botany-3']
                 },
                 {
                     id: 'mjc4',
                     name: 'MJC-4',
-                    subjects: ['Pol-Sci-3', 'History-3', 'Economics-3', 'English-3', 'Hindi-3', ''Urdu-3, 'Philosophy-3', 'Sociology-3', 'Psychology-3', 'Zoology-3', 'Chemistry', 'Physics-3', 'Mathematics-3', 'Botany-3']
+                    subjects: ['Pol-Sci-3', 'History-3', 'Economics-3', 'English-3', 'Hindi-3', 'Urdu-3', 'Philosophy-3', 'Sociology-3', 'Psychology-3', 'Zoology-3', 'Chemistry', 'Physics-3', 'Mathematics-3', 'Botany-3']
                 },
                 {
                     id: 'mic3',
@@ -411,7 +411,7 @@
                 {
                     id: 'mdc3',
                     name: 'MDC-3',
-                    subjects: ['MDC-History', 'MDC-Pol-sci', 'MDC-Economics', 'MDC-Hindi', 'MDC-English', 'MDC-Geography', 'MDC-Philosophy', 'MDC-Zoology', 'MDC-Chemistry', 'MDC-Physics', 'MDC-Botany']]
+                    subjects: ['MDC-History', 'MDC-Pol-sci', 'MDC-Economics', 'MDC-Hindi', 'MDC-English', 'MDC-Geography', 'MDC-Philosophy', 'MDC-Zoology', 'MDC-Chemistry', 'MDC-Physics', 'MDC-Botany']
                 },
                 {
                     id: 'sec3',
@@ -431,6 +431,7 @@
                 return div.innerHTML;
             }
 
+            // Check if user already has a saved name
             const savedName = localStorage.getItem('userName');
             if (savedName) {
                 welcomeScreen.style.display = 'none';
@@ -439,7 +440,15 @@
                 generateCourseCards();
             }
 
+            // Handle Enter button click
             enterBtn.addEventListener('click', handleEnter);
+
+            // Handle Enter key press
+            userNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleEnter();
+                }
+            });
 
             function handleEnter() {
                 const userName = userNameInput.value.trim();
@@ -447,13 +456,13 @@
                 if (!userName) {
                     alert('Please enter your name to continue.');
                     userNameInput.focus();
-                    return false;
+                    return;
                 }
 
                 if (userName.length > 50) {
                     alert('Name is too long. Please use 50 characters or fewer.');
                     userNameInput.focus();
-                    return false;
+                    return;
                 }
 
                 try {
@@ -470,12 +479,9 @@
                         greetingText.textContent = `Hello, ${sanitizedName}!`;
                         generateCourseCards();
                     }, 500);
-                    
-                    return true;
                 } catch (e) {
                     console.error('Error saving to localStorage:', e);
                     alert('An error occurred. Please try again.');
-                    return false;
                 }
             }
 
@@ -550,18 +556,18 @@
                 });
             }
 
+            // Clear all selected subjects
             clearBtn.addEventListener('click', function() {
                 if (confirm('Are you sure you want to clear all selected subjects?')) {
-                    courses.forEach(course => {
-                        localStorage.removeItem(course.id);
-                    });
-                    generateCourseCards();
-                }
-            });
-
-            userNameInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleEnter();
+                    try {
+                        courses.forEach(course => {
+                            localStorage.removeItem(course.id);
+                        });
+                        generateCourseCards();
+                    } catch (e) {
+                        console.error('Error clearing selections:', e);
+                        alert('An error occurred while clearing selections.');
+                    }
                 }
             });
         });
