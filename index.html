@@ -398,11 +398,7 @@
             </div>
             <div class="input-group">
                 <label for="rollNo">Your Roll Number</label>
-                <input type="text" id="rollNo" name="entry.2057467438" placeholder="Your roll number..." required>
-            </div>
-            <div class="input-group">
-                <label for="mobile">Your Mobile Number</label>
-                <input type="tel" id="mobile" name="entry.984676845" placeholder="Your mobile number..." required>
+                <input type="text" id="rollNo" name="entry.2057467438" placeholder="Enter 8-digit roll number..." required>
             </div>
             <button type="submit" class="btn">Enter</button>
         </form>
@@ -466,7 +462,8 @@
 
             // Check if user already has a saved name
             const savedName = localStorage.getItem('userName');
-            if (savedName) {
+            const savedRollNo = localStorage.getItem('userRollNo');
+            if (savedName && savedRollNo) {
                 welcomeScreen.style.display = 'none';
                 mainContent.style.display = 'block';
                 greetingText.textContent = `Hello, ${sanitizeInput(savedName)}!`;
@@ -474,15 +471,29 @@
             }
 
             function postToGoogle(event) {
-                if (event) event.preventDefault(); // Stop default behavior
+                if (event) event.preventDefault();
 
                 const name = document.getElementById('name').value.trim();
                 const department = document.getElementById('department').value.trim();
                 const rollNo = document.getElementById('rollNo').value.trim();
-                const mobile = document.getElementById('mobile').value.trim();
 
-                if (!name || !department || !rollNo || !mobile) {
+                if (!name || !department || !rollNo) {
                     alert("Please fill all fields.");
+                    return false;
+                }
+
+                // Validate Roll No: exactly 8 digits
+                if (rollNo.length !== 8 || isNaN(rollNo)) {
+                    alert("Roll number must be exactly 8 digits.");
+                    document.getElementById('rollNo').focus();
+                    return false;
+                }
+
+                // Check for duplicate Roll No in Local Storage
+                const existingRollNos = JSON.parse(localStorage.getItem('rollNos') || '[]');
+                if (existingRollNos.includes(rollNo)) {
+                    alert("This roll number is already registered. Please use a different one.");
+                    document.getElementById('rollNo').focus();
                     return false;
                 }
 
@@ -490,14 +501,18 @@
                 formData.append("entry.668301457", name);
                 formData.append("entry.719129946", department);
                 formData.append("entry.2057467438", rollNo);
-                formData.append("entry.984676845", mobile);
 
                 fetch("https://docs.google.com/forms/d/e/1FAIpQLSdZAGfjU4jjojVuWEfZ8QbErl0yzXLZBzXWvh5FnLHp2vbrkw/formResponse", {
                     method: "POST",
                     mode: "no-cors",
                     body: formData
                 }).then(() => {
+                    // Save new Roll No to prevent duplicates
+                    existingRollNos.push(rollNo);
+                    localStorage.setItem('rollNos', JSON.stringify(existingRollNos));
                     localStorage.setItem("userName", name);
+                    localStorage.setItem("userRollNo", rollNo);
+
                     document.getElementById("welcomeScreen").style.display = "none";
                     document.getElementById("mainContent").style.display = "block";
                     document.getElementById("greetingText").textContent = `Hello, ${name}!`;
@@ -510,7 +525,6 @@
                 return false;
             }
 
-            // Optional but safe: Add event listener
             document.getElementById("contactForm").addEventListener("submit", postToGoogle);
 
             function generateCourseCards() {
