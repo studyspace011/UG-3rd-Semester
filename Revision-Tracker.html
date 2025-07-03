@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spaced Repetition Revision Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .floating-btn {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.1);
+        }
+        
+        .tab-content {
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-content {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="flex flex-col gap-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-book-open text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Revision Tracker</h1>
+                        <p class="text-gray-600">Master your subjects with spaced repetition</p>
+                    </div>
+                </div>
+                <button id="addRevisionBtn" class="floating-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-blue-600 hover:to-blue-700">
+                    <i class="fas fa-plus"></i>
+                    <span>Add New Revision</span>
+                </button>
+            </div>
+            
+            <!-- Search and Filter Row -->
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Search by topic or subject...">
+                </div>
+                
+                <div class="flex gap-2">
+                    <select id="filterSubject" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Subjects</option>
+                        <option value="MJC-3">MJC-3</option>
+                        <option value="MJC-4">MJC-4</option>
+                        <option value="MIC-3">MIC-3</option>
+                        <option value="MDC-3">MDC-3</option>
+                        <option value="SEC-3">SEC-3</option>
+                        <option value="AEC-3">AEC-3</option>
+                    </select>
+                    
+                    <select id="filterStatus" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                    
+                    <button id="clearAllBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Clear All</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 fade-in">
+                <div class="relative w-16 h-16">
+                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                        <path class="text-gray-200" d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"/>
+                        <path class="text-green-500 progress-ring__circle" stroke-dasharray="100, 100" d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-gray-700" id="completionRate">0%</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
+                    <p class="text-2xl font-bold text-gray-800" id="completedCount">0</p>
+                    <p class="text-sm text-gray-500">of scheduled revisions</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 fade-in" style="animation-delay: 0.1s">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                    <i class="fas fa-calendar-day text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium">Today's Revisions</h3>
+                    <p class="text-2xl font-bold text-gray-800" id="todayCount">0</p>
+                    <p class="text-sm text-gray-500">to complete today</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 fade-in" style="animation-delay: 0.2s">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-500">
+                    <i class="fas fa-clock text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium">Upcoming</h3>
+                    <p class="text-2xl font-bold text-gray-800" id="upcomingCount">0</p>
+                    <p class="text-sm text-gray-500">revisions this week</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clear All Confirmation Modal -->
+        <div id="clearAllModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-r from-red-500 to-red-600 p-4 text-white">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">Confirm Clear All</h2>
+                        <button id="cancelClearAllBtn" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-700 mb-6">Are you sure you want to delete ALL revisions? This action cannot be undone.</p>
+                    <div class="flex justify-end gap-3">
+                        <button id="confirmClearAllBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                            Yes, Clear All
+                        </button>
+                        <button id="cancelClearAllBtn2" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Revision Modal -->
+        <div id="addRevisionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">Add New Revision</h2>
+                        <button id="cancelBtn" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <form id="revisionForm" class="p-6">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                        <div class="relative">
+                            <input type="text" id="subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-book text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Topic</label>
+                        <div class="relative">
+                            <input type="text" id="topic" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-tag text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subtopics (e.g., 1.1.1 to 1.1.5)</label>
+                        <div class="relative">
+                            <input type="text" id="subtopics" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-list-ol text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-8">
+                        <button type="button" id="resetBtn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            Reset
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Revision</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calendar Section -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Revision Calendar</h2>
+                        <div class="flex items-center gap-2">
+                            <button id="prevMonth" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="todayBtn" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition text-sm">
+                                Today
+                            </button>
+                            <button id="nextMonth" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="monthYear" class="text-center text-xl font-semibold text-gray-700 mb-4"></div>
+                    
+                    <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                        <div class="font-medium text-gray-500 text-sm py-2">Sun</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">Mon</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">Tue</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">Wed</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">Thu</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">Fri</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">Sat</div>
+                    </div>
+                    
+                    <div id="calendar" class="grid grid-cols-7 gap-1 text-center"></div>
+                    
+                    <div id="calendarDetails" class="mt-6 bg-gray-50 rounded-lg p-4 hidden">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-bold text-gray-800" id="detailsDate"></h3>
+                            <button id="closeDetails" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="detailsContent" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="flex border-b">
+                    <button id="upcomingTab" class="flex-1 py-3 font-medium text-center border-b-2 border-blue-500 text-blue-600">
+                        <i class="fas fa-calendar-alt mr-2"></i>Upcoming
+                    </button>
+                    <button id="toReviseTab" class="flex-1 py-3 font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-tasks mr-2"></i>To Revise
+                    </button>
+                </div>
+                
+                <div id="upcomingContent" class="tab-content p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">Upcoming Revisions</h2>
+                        <div class="text-sm text-gray-500" id="upcomingSubtitle"></div>
+                    </div>
+                    <div id="upcomingList" class="space-y-3"></div>
+                </div>
+                
+                <div id="toReviseContent" class="tab-content p-4 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">To Revise Today</h2>
+                        <div class="text-sm text-gray-500" id="toReviseSubtitle"></div>
+                    </div>
+                    <div id="toReviseList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize revisions from local storage
+        let revisions = JSON.parse(localStorage.getItem('revisions')) || [];
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+        
+        // Calculate stats
+        function calculateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Total scheduled revisions
+            const totalScheduled = revisions.reduce((acc, rev) => acc + rev.revisionDates.length, 0);
+            
+            // Completed revisions
+            const completed = revisions.reduce((acc, rev) => 
+                acc + rev.revisionDates.filter(rd => rd.completed).length, 0);
+            
+            // Today's revisions
+            const todayRevisions = revisions.reduce((acc, rev) => 
+                acc + rev.revisionDates.filter(rd => rd.date === today && !rd.completed).length, 0);
+            
+            // Upcoming this week
+            const weekFromNow = new Date();
+            weekFromNow.setDate(weekFromNow.getDate() + 7);
+            const weekFromNowStr = weekFromNow.toISOString().split('T')[0];
+            const upcomingWeek = revisions.reduce((acc, rev) => 
+                acc + rev.revisionDates.filter(rd => rd.date > today && rd.date <= weekFromNowStr && !rd.completed).length, 0);
+            
+            // Update UI
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('todayCount').textContent = todayRevisions;
+            document.getElementById('upcomingCount').textContent = upcomingWeek;
+            
+            // Completion rate circle
+            const completionRate = totalScheduled > 0 ? Math.round((completed / totalScheduled) * 100) : 0;
+            document.getElementById('completionRate').textContent = `${completionRate}%`;
+            
+            const circle = document.querySelector('.progress-ring__circle');
+            if (circle) {
+                const radius = circle.r.baseVal.value;
+                const circumference = radius * 2 * Math.PI;
+                const offset = circumference - (completionRate / 100) * circumference;
+                circle.style.strokeDasharray = `${circumference} ${circumference}`;
+                circle.style.strokeDashoffset = offset;
+            }
+        }
+
+        // Modal handling
+        const addRevisionBtn = document.getElementById('addRevisionBtn');
+        const addRevisionModal = document.getElementById('addRevisionModal');
+        const revisionForm = document.getElementById('revisionForm');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        addRevisionBtn.addEventListener('click', () => {
+            addRevisionModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            addRevisionModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            revisionForm.reset();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            revisionForm.reset();
+        });
+
+        revisionForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const subject = document.getElementById('subject').value;
+            const topic = document.getElementById('topic').value;
+            const subtopics = document.getElementById('subtopics').value;
+            const startDate = new Date();
+            const revisionDates = [
+                new Date(startDate.getTime() + 1 * 24 * 60 * 60 * 1000),
+                new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000),
+                new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000),
+                new Date(startDate.getTime() + 15 * 24 * 60 * 60 * 1000),
+                new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+            ].map(date => ({ date: date.toISOString().split('T')[0], completed: false }));
+
+            const newRevision = { 
+                id: Date.now(), 
+                subject, 
+                topic, 
+                subtopics, 
+                revisionDates,
+                createdAt: new Date().toISOString()
+            };
+            revisions.push(newRevision);
+            localStorage.setItem('revisions', JSON.stringify(revisions));
+            addRevisionModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            revisionForm.reset();
+            renderCalendar();
+            renderUpcoming();
+            renderToRevise();
+            calculateStats();
+            updateSubjectFilter();
+            setupEditableElements();
+            saveRevisionToGoogleSheet(newRevision);
+        });
+
+        // Tab switching
+        const upcomingTab = document.getElementById('upcomingTab');
+        const toReviseTab = document.getElementById('toReviseTab');
+        const upcomingContent = document.getElementById('upcomingContent');
+        const toReviseContent = document.getElementById('toReviseContent');
+
+        upcomingTab.addEventListener('click', () => {
+            upcomingTab.classList.add('border-blue-500', 'text-blue-600');
+            upcomingTab.classList.remove('border-transparent', 'text-gray-500');
+            toReviseTab.classList.add('border-transparent', 'text-gray-500');
+            toReviseTab.classList.remove('border-blue-500', 'text-blue-600');
+            upcomingContent.classList.remove('hidden');
+            toReviseContent.classList.add('hidden');
+        });
+
+        toReviseTab.addEventListener('click', () => {
+            toReviseTab.classList.add('border-blue-500', 'text-blue-600');
+            toReviseTab.classList.remove('border-transparent', 'text-gray-500');
+            upcomingTab.classList.add('border-transparent', 'text-gray-500');
+            upcomingTab.classList.remove('border-blue-500', 'text-blue-600');
+            toReviseContent.classList.remove('hidden');
+            upcomingContent.classList.add('hidden');
+        });
+
+        // Calendar rendering
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthYear = document.getElementById('monthYear');
+            calendar.innerHTML = '';
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDay = firstDay.getDay();
+            const today = new Date();
+            const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
+            monthYear.textContent = `${firstDay.toLocaleString('default', { month: 'long' })} ${currentYear}`;
+
+            // Empty days
+            for (let i = 0; i < startDay; i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            // Days with revisions
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateObj = new Date(currentYear, currentMonth, day);
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('calendar-day', 'p-2', 'rounded-lg', 'cursor-pointer', 'relative');
+                
+                // Day number
+                const dayNumber = document.createElement('div');
+                dayNumber.textContent = day;
+                dayNumber.classList.add('text-center', 'font-medium');
+                
+                // Check if today
+                if (isCurrentMonth && day === today.getDate()) {
+                    dayDiv.classList.add('bg-blue-100', 'border', 'border-blue-200');
+                    dayNumber.classList.add('text-blue-600', 'font-bold');
+                }
+                
+                dayDiv.appendChild(dayNumber);
+                
+                // Check for revisions
+                const revisionsOnDay = revisions.flatMap(rev => 
+                    rev.revisionDates.filter(rd => rd.date === dateStr)
+                        .map(rd => ({ 
+                            subject: rev.subject, 
+                            topic: rev.topic, 
+                            subtopics: rev.subtopics,
+                            completed: rd.completed,
+                            id: rev.id,
+                            revisionDate: rd.date
+                        }))
+                );
+                
+                if (revisionsOnDay.length > 0) {
+                    const completedCount = revisionsOnDay.filter(r => r.completed).length;
+                    const totalCount = revisionsOnDay.length;
+                    
+                    // Add indicator
+                    const indicator = document.createElement('div');
+                    indicator.classList.add('absolute', 'bottom-1', 'left-0', 'right-0', 'flex', 'justify-center');
+                    
+                    if (completedCount === totalCount) {
+                        // All completed
+                        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div>`;
+                    } else if (completedCount > 0) {
+                        // Some completed
+                        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-yellow-500"></div>`;
+                    } else {
+                        // None completed
+                        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div>`;
+                    }
+                    
+                    dayDiv.appendChild(indicator);
+                }
+                
+                dayDiv.addEventListener('click', () => showCalendarDetails(dateStr, revisionsOnDay));
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        function showCalendarDetails(dateStr, revisionsOnDay) {
+            const calendarDetails = document.getElementById('calendarDetails');
+            const detailsDate = document.getElementById('detailsDate');
+            const detailsContent = document.getElementById('detailsContent');
+            
+            detailsDate.textContent = new Date(dateStr).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            detailsContent.innerHTML = '';
+            
+            if (revisionsOnDay.length === 0) {
+                detailsContent.innerHTML = `
+                    <div class="text-center py-4 text-gray-500">
+                        <i class="fas fa-calendar-day text-3xl mb-2 text-gray-300"></i>
+                        <p>No revisions scheduled for this day</p>
+                    </div>
+                `;
+            } else {
+                const groupedRevisions = revisionsOnDay.reduce((acc, rev) => {
+                    if (!acc[rev.subject]) {
+                        acc[rev.subject] = [];
+                    }
+                    acc[rev.subject].push(rev);
+                    return acc;
+                }, {});
+                
+                for (const subject in groupedRevisions) {
+                    const subjectDiv = document.createElement('div');
+                    subjectDiv.classList.add('bg-white', 'rounded-lg', 'p-3', 'shadow-sm');
+                    
+                    const subjectHeader = document.createElement('div');
+                    subjectHeader.classList.add('flex', 'justify-between', 'items-center', 'mb-2');
+                    subjectHeader.innerHTML = `
+                        <h4 class="font-bold text-gray-800">${subject}</h4>
+                        <span class="text-xs px-2 py-1 rounded-full ${groupedRevisions[subject].some(r => !r.completed) ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                            ${groupedRevisions[subject].filter(r => !r.completed).length} pending
+                        </span>
+                    `;
+                    
+                    subjectDiv.appendChild(subjectHeader);
+                    
+                    const topicsList = document.createElement('div');
+                    topicsList.classList.add('space-y-2');
+                    
+                    groupedRevisions[subject].forEach(rev => {
+                        const topicDiv = document.createElement('div');
+                        topicDiv.classList.add('flex', 'justify-between', 'items-center');
+                        
+                        const topicInfo = document.createElement('div');
+                        topicInfo.innerHTML = `
+                            <p class="text-sm ${rev.completed ? 'line-through text-gray-400' : 'text-gray-700'}">
+                                ${rev.topic}${rev.subtopics ? ' (' + rev.subtopics + ')' : ''}
+                            </p>
+                        `;
+                        
+                        const actions = document.createElement('div');
+                        actions.classList.add('flex', 'gap-2');
+                        
+                        if (!rev.completed) {
+                            actions.innerHTML = `
+                                <button class="completeBtn px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600" 
+                                    data-id="${rev.id}" data-date="${rev.revisionDate}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="deleteBtn px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600" 
+                                    data-id="${rev.id}" data-date="${rev.revisionDate}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `;
+                        } else {
+                            actions.innerHTML = `
+                                <span class="text-xs text-green-500">
+                                    <i class="fas fa-check-circle"></i> Completed
+                                </span>
+                            `;
+                        }
+                        
+                        topicDiv.appendChild(topicInfo);
+                        topicDiv.appendChild(actions);
+                        topicsList.appendChild(topicDiv);
+                    });
+                    
+                    subjectDiv.appendChild(topicsList);
+                    detailsContent.appendChild(subjectDiv);
+                }
+            }
+            
+            calendarDetails.classList.remove('hidden');
+            
+            // Add event listeners for complete and delete buttons
+            document.querySelectorAll('.completeBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.map(rd => 
+                                rd.date === date ? { ...rd, completed: true } : rd
+                            );
+                        }
+                        return rev;
+                    });
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderCalendar();
+                    renderUpcoming();
+                    renderToRevise();
+                    calculateStats();
+                    showCalendarDetails(dateStr, revisions.flatMap(rev => 
+                        rev.revisionDates.filter(rd => rd.date === dateStr)
+                            .map(rd => ({ 
+                                subject: rev.subject, 
+                                topic: rev.topic, 
+                                subtopics: rev.subtopics,
+                                completed: rd.completed,
+                                id: rev.id,
+                                revisionDate: rd.date
+                            }))
+                    ));
+                    
+                    // Show success notification
+                    showNotification('Revision marked as completed!', 'success');
+                });
+            });
+
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.filter(rd => rd.date !== date);
+                        }
+                        return rev;
+                    }).filter(rev => rev.revisionDates.length > 0);
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderCalendar();
+                    renderUpcoming();
+                    renderToRevise();
+                    calculateStats();
+                    
+                    // Check if there are still revisions for this date
+                    const remainingRevisions = revisions.flatMap(rev => 
+                        rev.revisionDates.filter(rd => rd.date === dateStr)
+                            .map(rd => ({ 
+                                subject: rev.subject, 
+                                topic: rev.topic, 
+                                subtopics: rev.subtopics,
+                                completed: rd.completed,
+                                id: rev.id,
+                                revisionDate: rd.date
+                            }))
+                    );
+                    
+                    if (remainingRevisions.length > 0) {
+                        showCalendarDetails(dateStr, remainingRevisions);
+                    } else {
+                        calendarDetails.classList.add('hidden');
+                    }
+                    
+                    // Show success notification
+                    showNotification('Revision deleted successfully!', 'success');
+                });
+            });
+        }
+
+        document.getElementById('closeDetails').addEventListener('click', () => {
+            document.getElementById('calendarDetails').classList.add('hidden');
+        });
+
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        });
+
+        document.getElementById('todayBtn').addEventListener('click', () => {
+            currentDate = new Date();
+            currentMonth = currentDate.getMonth();
+            currentYear = currentDate.getFullYear();
+            renderCalendar();
+        });
+
+        // Render revision lists
+        function renderUpcoming() {
+            const upcomingList = document.getElementById('upcomingList');
+            const upcomingSubtitle = document.getElementById('upcomingSubtitle');
+            upcomingList.innerHTML = '';
+            const today = new Date().toISOString().split('T')[0];
+            const upcomingRevisions = revisions.flatMap(rev => 
+                rev.revisionDates.filter(rd => rd.date > today && !rd.completed)
+                    .map(rd => ({ ...rev, revisionDate: rd.date }))
+            ).sort((a, b) => a.revisionDate.localeCompare(b.revisionDate));
+
+            upcomingSubtitle.textContent = `${upcomingRevisions.length} scheduled`;
+            
+            if (upcomingRevisions.length === 0) {
+                upcomingList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-calendar-plus text-3xl mb-2 text-gray-300"></i>
+                        <p>No upcoming revisions</p>
+                        <p class="text-sm mt-2">Add a new revision to get started</p>
+                    </div>
+                `;
+                return;
+            }
+
+            upcomingRevisions.forEach(rev => {
+                const div = document.createElement('div');
+                div.classList.add('bg-white', 'rounded-lg', 'shadow-sm', 'p-4', 'fade-in');
+                
+                const dateObj = new Date(rev.revisionDate);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-gray-800 editable-subject" data-id="${rev.id}" contenteditable="false">${rev.subject}</h3>
+                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full">${formattedDate}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">
+                        <span class="editable-topic" data-id="${rev.id}" contenteditable="false">${rev.topic}</span>
+                        ${rev.subtopics ? ' (<span class="editable-subtopics" data-id="${rev.id}" contenteditable="false">' + rev.subtopics + '</span>)' : ''}
+                    </p>
+                    <div class="flex justify-end gap-2">
+                        <button class="completeBtn px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 flex items-center gap-1" 
+                            data-id="${rev.id}" data-date="${rev.revisionDate}">
+                            <i class="fas fa-check text-xs"></i>
+                            <span>Complete</span>
+                        </button>
+                        <button class="deleteBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 flex items-center gap-1" 
+                            data-id="${rev.id}" data-date="${rev.revisionDate}">
+                            <i class="fas fa-trash text-xs"></i>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                `;
+                upcomingList.appendChild(div);
+            });
+
+            // Add event listeners for complete and delete buttons
+            document.querySelectorAll('.completeBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.map(rd => 
+                                rd.date === date ? { ...rd, completed: true } : rd
+                            );
+                        }
+                        return rev;
+                    });
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderUpcoming();
+                    renderToRevise();
+                    renderCalendar();
+                    calculateStats();
+                    
+                    // Show success notification
+                    showNotification('Revision marked as completed!', 'success');
+                });
+            });
+
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.filter(rd => rd.date !== date);
+                        }
+                        return rev;
+                    }).filter(rev => rev.revisionDates.length > 0);
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderUpcoming();
+                    renderToRevise();
+                    renderCalendar();
+                    calculateStats();
+                    
+                    // Show success notification
+                    showNotification('Revision deleted successfully!', 'success');
+                });
+            });
+        }
+
+        function renderToRevise() {
+            const toReviseList = document.getElementById('toReviseList');
+            const toReviseSubtitle = document.getElementById('toReviseSubtitle');
+            toReviseList.innerHTML = '';
+            const today = new Date().toISOString().split('T')[0];
+            const toRevise = revisions.flatMap(rev => 
+                rev.revisionDates.filter(rd => rd.date === today && !rd.completed)
+                    .map(rd => ({ ...rev, revisionDate: rd.date }))
+            );
+
+            toReviseSubtitle.textContent = `${toRevise.length} due today`;
+            
+            if (toRevise.length === 0) {
+                toReviseList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-check-circle text-3xl mb-2 text-gray-300"></i>
+                        <p>No revisions due today</p>
+                        <p class="text-sm mt-2">You're all caught up!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            toRevise.forEach(rev => {
+                const div = document.createElement('div');
+                div.classList.add('bg-white', 'rounded-lg', 'shadow-sm', 'p-4', 'fade-in');
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-gray-800">${rev.subject}</h3>
+                        <span class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full pulse">Due Today</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${rev.topic}${rev.subtopics ? ' (' + rev.subtopics + ')' : ''}</p>
+                    <div class="flex justify-end gap-2">
+                        <button class="completeBtn px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 flex items-center gap-1" 
+                            data-id="${rev.id}" data-date="${rev.revisionDate}">
+                            <i class="fas fa-check text-xs"></i>
+                            <span>Complete</span>
+                        </button>
+                        <button class="deleteBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 flex items-center gap-1" 
+                            data-id="${rev.id}" data-date="${rev.revisionDate}">
+                            <i class="fas fa-trash text-xs"></i>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                `;
+                toReviseList.appendChild(div);
+            });
+
+            // Add event listeners for complete and delete buttons
+            document.querySelectorAll('.completeBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.map(rd => 
+                                rd.date === date ? { ...rd, completed: true } : rd
+                            );
+                        }
+                        return rev;
+                    });
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderUpcoming();
+                    renderToRevise();
+                    renderCalendar();
+                    calculateStats();
+                    
+                    // Show success notification
+                    showNotification('Revision marked as completed!', 'success');
+                });
+            });
+
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.filter(rd => rd.date !== date);
+                        }
+                        return rev;
+                    }).filter(rev => rev.revisionDates.length > 0);
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderUpcoming();
+                    renderToRevise();
+                    renderCalendar();
+                    calculateStats();
+                    
+                    // Show success notification
+                    showNotification('Revision deleted successfully!', 'success');
+                });
+            });
+        }
+
+        // Notification system
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.classList.add('fixed', 'bottom-4', 'right-4', 'p-4', 'rounded-lg', 'shadow-lg', 'text-white', 'flex', 'items-center', 'gap-3', 'z-50', 'fade-in');
+            
+            if (type === 'success') {
+                notification.classList.add('bg-green-500');
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                `;
+            } else {
+                notification.classList.add('bg-red-500');
+                notification.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>${message}</span>
+                `;
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', () => {
+            renderUpcoming();
+            renderToRevise();
+        });
+
+        // Filter subjects dropdown
+        function updateSubjectFilter() {
+            const filterSubject = document.getElementById('filterSubject');
+            const subjects = [...new Set(revisions.map(rev => rev.subject))];
+            
+            // Clear existing options except "All Subjects"
+            while (filterSubject.options.length > 1) {
+                filterSubject.remove(1);
+            }
+            
+            // Add subjects
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                filterSubject.appendChild(option);
+            });
+        }
+
+        // Filter status functionality
+        const filterSubject = document.getElementById('filterSubject');
+        const filterStatus = document.getElementById('filterStatus');
+        
+        [filterSubject, filterStatus].forEach(filter => {
+            filter.addEventListener('change', () => {
+                renderUpcoming();
+                renderToRevise();
+            });
+        });
+
+        // Clear all functionality
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const clearAllModal = document.getElementById('clearAllModal');
+        const cancelClearAllBtns = document.querySelectorAll('[id^="cancelClearAllBtn"]');
+        const confirmClearAllBtn = document.getElementById('confirmClearAllBtn');
+        
+        clearAllBtn.addEventListener('click', () => {
+            clearAllModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        cancelClearAllBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                clearAllModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+        });
+        
+        confirmClearAllBtn.addEventListener('click', () => {
+            revisions = [];
+            localStorage.setItem('revisions', JSON.stringify(revisions));
+            clearAllModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            renderCalendar();
+            renderUpcoming();
+            renderToRevise();
+            calculateStats();
+            showNotification('All revisions cleared successfully!', 'success');
+        });
+
+        // Edit functionality
+        function setupEditableElements() {
+            document.querySelectorAll('[contenteditable="false"]').forEach(el => {
+                el.addEventListener('dblclick', () => {
+                    el.contentEditable = 'true';
+                    el.focus();
+                    el.classList.add('bg-blue-50', 'outline-none', 'px-2', 'py-1', 'rounded');
+                });
+                
+                el.addEventListener('blur', () => {
+                    el.contentEditable = 'false';
+                    el.classList.remove('bg-blue-50', 'outline-none', 'px-2', 'py-1', 'rounded');
+                    
+                    const id = parseInt(el.dataset.id);
+                    const field = el.classList.contains('editable-subject') ? 'subject' : 
+                                el.classList.contains('editable-topic') ? 'topic' : 'subtopics';
+                    const newValue = el.textContent.trim();
+                    
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            return { ...rev, [field]: newValue };
+                        }
+                        return rev;
+                    });
+                    
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    showNotification('Revision updated successfully!', 'success');
+                });
+                
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        el.blur();
+                    }
+                });
+            });
+        }
+
+        // Modify render functions to include search and filter
+        function filterRevisions(revisionsList) {
+            const searchTerm = searchInput.value.toLowerCase();
+            const subjectFilter = filterSubject.value;
+            const statusFilter = filterStatus.value;
+            
+            return revisionsList.filter(rev => {
+                const matchesSearch = rev.subject.toLowerCase().includes(searchTerm) || 
+                                    rev.topic.toLowerCase().includes(searchTerm) ||
+                                    (rev.subtopics && rev.subtopics.toLowerCase().includes(searchTerm));
+                
+                const matchesSubject = !subjectFilter || rev.subject === subjectFilter;
+                
+                let matchesStatus = true;
+                if (statusFilter === 'completed') {
+                    matchesStatus = rev.completed;
+                } else if (statusFilter === 'pending') {
+                    matchesStatus = !rev.completed;
+                }
+                
+                return matchesSearch && matchesSubject && matchesStatus;
+            });
+        }
+
+        // Google Sheets integration
+        function saveRevisionToGoogleSheet(revision) {
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyF_tytlrBeZ5Pu6K-SKcbEA9v0mEKsLkkd7wovzq4eC7SAJy2s1h4Ws1cozPoEVnIHIw/exec';
+            
+            const payload = {
+                subject: revision.subject,
+                topic: revision.topic,
+                subtopics: revision.subtopics || '',
+                revisionDates: revision.revisionDates,
+                totalRevisions: revision.revisionDates.length,
+                completedCount: revision.revisionDates.filter(rd => rd.completed).length,
+                nextRevisionDate: getNextRevisionDate(revision.revisionDates),
+                createdAt: revision.createdAt
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                mode: 'cors',
+                redirect: 'follow'
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.text();
+            })
+            .then(text => {
+                if (text === "Success") {
+                    showNotification("रिवीजन Google Sheet में सफलतापूर्वक सेव हो गया!", 'success');
+                } else {
+                    throw new Error(text);
+                }
+            })
+            .catch(err => {
+                console.error('Google Sheet Error:', err);
+                showNotification(`Google Sheet में सेव करने में असफल: ${err.message}`, 'error');
+            });
+        }
+
+        function getNextRevisionDate(datesArray) {
+            if (!Array.isArray(datesArray)) return '';
+            const today = new Date().toISOString().split('T')[0];
+            const upcoming = datesArray.find(rd => rd.date >= today);
+            return upcoming ? upcoming.date : '';
+        }
+
+        // Update initial render calls
+        function init() {
+            renderCalendar();
+            renderUpcoming();
+            renderToRevise();
+            calculateStats();
+            updateSubjectFilter();
+            setupEditableElements();
+        }
+
+        init();
+    </script>
+</body>
+</html>
