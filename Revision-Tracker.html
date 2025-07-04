@@ -55,6 +55,9 @@
         
         .modal-content {
             animation: modalFadeIn 0.3s ease-out;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         @keyframes modalFadeIn {
@@ -81,10 +84,20 @@
                         <p class="text-gray-600">Master your subjects with spaced repetition</p>
                     </div>
                 </div>
-                <button id="addRevisionBtn" class="floating-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-blue-600 hover:to-blue-700">
-                    <i class="fas fa-plus"></i>
-                    <span>Add New Revision</span>
-                </button>
+                <div class="flex gap-4">
+                    <button id="addRevisionBtn" class="floating-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-blue-600 hover:to-blue-700">
+                        <i class="fas fa-plus"></i>
+                        <span>Add New Revision</span>
+                    </button>
+                    <button id="exportBtn" class="floating-btn bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-green-600 hover:to-green-700">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
+                    </button>
+                    <button id="importBtn" class="floating-btn bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-purple-600 hover:to-purple-700">
+                        <i class="fas fa-upload"></i>
+                        <span>Import</span>
+                    </button>
+                </div>
             </div>
             
             <!-- Search and Filter Row -->
@@ -99,12 +112,6 @@
                 <div class="flex gap-2">
                     <select id="filterSubject" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Subjects</option>
-                        <option value="MJC-3">MJC-3</option>
-                        <option value="MJC-4">MJC-4</option>
-                        <option value="MIC-3">MIC-3</option>
-                        <option value="MDC-3">MDC-3</option>
-                        <option value="SEC-3">SEC-3</option>
-                        <option value="AEC-3">AEC-3</option>
                     </select>
                     
                     <select id="filterStatus" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -179,10 +186,16 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-gray-700 mb-6">Are you sure you want to delete ALL revisions? This action cannot be undone.</p>
+                    <p class="text-gray-700 mb-4">Are you sure you want to delete ALL revisions? This action cannot be undone.</p>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Optional: Delete specific subject</label>
+                        <select id="clearSubject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Subjects</option>
+                        </select>
+                    </div>
                     <div class="flex justify-end gap-3">
                         <button id="confirmClearAllBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-                            Yes, Clear All
+                            Yes, Clear
                         </button>
                         <button id="cancelClearAllBtn2" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                             Cancel
@@ -206,11 +219,17 @@
                 <form id="revisionForm" class="p-6">
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                        <div class="relative">
-                            <input type="text" id="subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <i class="fas fa-book text-gray-400"></i>
-                            </div>
+                        <div class="flex gap-2">
+                            <select id="subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="">Select Subject</option>
+                            </select>
+                            <button type="button" id="addNewSubjectBtn" class="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="newSubjectInput" class="hidden mt-2">
+                            <input type="text" id="newSubject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter new subject">
+                            <button type="button" id="saveNewSubjectBtn" class="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Save Subject</button>
                         </div>
                     </div>
                     <div class="mb-6">
@@ -241,6 +260,25 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Revision Details Modal -->
+        <div id="revisionDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">Revision Details</h2>
+                        <button id="closeRevisionDetailsBtn" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 id="revisionSubject" class="text-lg font-bold text-gray-800 mb-2"></h3>
+                    <p id="revisionTopic" class="text-sm text-gray-600 mb-4"></p>
+                    <div id="revisionDates" class="space-y-3"></div>
+                </div>
             </div>
         </div>
 
@@ -278,6 +316,17 @@
                     
                     <div id="calendar" class="grid grid-cols-7 gap-1 text-center"></div>
                     
+                    <!-- Calendar Legend -->
+                    <div class="mt-4 flex flex-wrap gap-4">
+                        <div class="text-sm text-gray-600">Legend:</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div><span>Macroeconomics</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div><span>Statics</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><span>History</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div><span>Hindi</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-500"></div><span>Communication</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div><span>Disaster Risk Management</span></div>
+                    </div>
+                    
                     <div id="calendarDetails" class="mt-6 bg-gray-50 rounded-lg p-4 hidden">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-lg font-bold text-gray-800" id="detailsDate"></h3>
@@ -299,6 +348,9 @@
                     <button id="toReviseTab" class="flex-1 py-3 font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700">
                         <i class="fas fa-tasks mr-2"></i>To Revise
                     </button>
+                    <button id="completedTab" class="flex-1 py-3 font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-check-circle mr-2"></i>Completed
+                    </button>
                 </div>
                 
                 <div id="upcomingContent" class="tab-content p-4">
@@ -316,45 +368,60 @@
                     </div>
                     <div id="toReviseList" class="space-y-3"></div>
                 </div>
+                
+                <div id="completedContent" class="tab-content p-4 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">Completed Revisions</h2>
+                        <div class="text-sm text-gray-500" id="completedSubtitle"></div>
+                    </div>
+                    <div id="completedList" class="space-y-3"></div>
+                </div>
             </div>
         </div>
     </div>
 
+    <input type="file" id="importFile" class="hidden" accept=".json">
+
     <script>
-        // Initialize revisions from local storage
+        // Initialize data
         let revisions = JSON.parse(localStorage.getItem('revisions')) || [];
+        let subjects = JSON.parse(localStorage.getItem('subjects')) || [
+            'Macroeconomics', 'Statics', 'History', 'Hindi', 'Communication', 'Disaster Risk Management'
+        ];
         let currentDate = new Date();
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
-        
+        let lastCompletedRevision = null;
+
+        // Subject colors
+        const subjectColors = {
+            'Macroeconomics': 'bg-blue-500',
+            'Statics': 'bg-green-500',
+            'History': 'bg-red-500',
+            'Hindi': 'bg-yellow-500',
+            'Communication': 'bg-purple-500',
+            'Disaster Risk Management': 'bg-orange-500'
+        };
+
         // Calculate stats
         function calculateStats() {
             const today = new Date().toISOString().split('T')[0];
             
-            // Total scheduled revisions
             const totalScheduled = revisions.reduce((acc, rev) => acc + rev.revisionDates.length, 0);
-            
-            // Completed revisions
             const completed = revisions.reduce((acc, rev) => 
                 acc + rev.revisionDates.filter(rd => rd.completed).length, 0);
-            
-            // Today's revisions
             const todayRevisions = revisions.reduce((acc, rev) => 
                 acc + rev.revisionDates.filter(rd => rd.date === today && !rd.completed).length, 0);
-            
-            // Upcoming this week
             const weekFromNow = new Date();
             weekFromNow.setDate(weekFromNow.getDate() + 7);
             const weekFromNowStr = weekFromNow.toISOString().split('T')[0];
             const upcomingWeek = revisions.reduce((acc, rev) => 
                 acc + rev.revisionDates.filter(rd => rd.date > today && rd.date <= weekFromNowStr && !rd.completed).length, 0);
             
-            // Update UI
             document.getElementById('completedCount').textContent = completed;
             document.getElementById('todayCount').textContent = todayRevisions;
             document.getElementById('upcomingCount').textContent = upcomingWeek;
             
-            // Completion rate circle
             const completionRate = totalScheduled > 0 ? Math.round((completed / totalScheduled) * 100) : 0;
             document.getElementById('completionRate').textContent = `${completionRate}%`;
             
@@ -374,21 +441,57 @@
         const revisionForm = document.getElementById('revisionForm');
         const cancelBtn = document.getElementById('cancelBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const addNewSubjectBtn = document.getElementById('addNewSubjectBtn');
+        const newSubjectInput = document.getElementById('newSubjectInput');
+        const newSubject = document.getElementById('newSubject');
+        const saveNewSubjectBtn = document.getElementById('saveNewSubjectBtn');
 
         addRevisionBtn.addEventListener('click', () => {
             addRevisionModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            updateSubjectDropdown();
         });
 
         cancelBtn.addEventListener('click', () => {
             addRevisionModal.classList.add('hidden');
             document.body.style.overflow = '';
             revisionForm.reset();
+            newSubjectInput.classList.add('hidden');
         });
 
         resetBtn.addEventListener('click', () => {
             revisionForm.reset();
+            newSubjectInput.classList.add('hidden');
         });
+
+        addNewSubjectBtn.addEventListener('click', () => {
+            newSubjectInput.classList.toggle('hidden');
+        });
+
+        saveNewSubjectBtn.addEventListener('click', () => {
+            const newSub = newSubject.value.trim();
+            if (newSub && !subjects.includes(newSub)) {
+                subjects.push(newSub);
+                localStorage.setItem('subjects', JSON.stringify(subjects));
+                updateSubjectDropdown();
+                newSubjectInput.classList.add('hidden');
+                newSubject.value = '';
+                showNotification('New subject added!', 'success');
+            } else {
+                showNotification('Subject already exists or is empty!', 'error');
+            }
+        });
+
+        function updateSubjectDropdown() {
+            const subjectSelect = document.getElementById('subject');
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+            subjects.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                subjectSelect.appendChild(option);
+            });
+        }
 
         revisionForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -420,25 +523,30 @@
             renderCalendar();
             renderUpcoming();
             renderToRevise();
+            renderCompleted();
             calculateStats();
             updateSubjectFilter();
-            setupEditableElements();
-            saveRevisionToGoogleSheet(newRevision);
+            showNotification('Revision added successfully!', 'success');
         });
 
         // Tab switching
         const upcomingTab = document.getElementById('upcomingTab');
         const toReviseTab = document.getElementById('toReviseTab');
+        const completedTab = document.getElementById('completedTab');
         const upcomingContent = document.getElementById('upcomingContent');
         const toReviseContent = document.getElementById('toReviseContent');
+        const completedContent = document.getElementById('completedContent');
 
         upcomingTab.addEventListener('click', () => {
             upcomingTab.classList.add('border-blue-500', 'text-blue-600');
             upcomingTab.classList.remove('border-transparent', 'text-gray-500');
             toReviseTab.classList.add('border-transparent', 'text-gray-500');
             toReviseTab.classList.remove('border-blue-500', 'text-blue-600');
+            completedTab.classList.add('border-transparent', 'text-gray-500');
+            completedTab.classList.remove('border-blue-500', 'text-blue-600');
             upcomingContent.classList.remove('hidden');
             toReviseContent.classList.add('hidden');
+            completedContent.classList.add('hidden');
         });
 
         toReviseTab.addEventListener('click', () => {
@@ -446,8 +554,23 @@
             toReviseTab.classList.remove('border-transparent', 'text-gray-500');
             upcomingTab.classList.add('border-transparent', 'text-gray-500');
             upcomingTab.classList.remove('border-blue-500', 'text-blue-600');
+            completedTab.classList.add('border-transparent', 'text-gray-500');
+            completedTab.classList.remove('border-blue-500', 'text-blue-600');
             toReviseContent.classList.remove('hidden');
             upcomingContent.classList.add('hidden');
+            completedContent.classList.add('hidden');
+        });
+
+        completedTab.addEventListener('click', () => {
+            completedTab.classList.add('border-blue-500', 'text-blue-600');
+            completedTab.classList.remove('border-transparent', 'text-gray-500');
+            upcomingTab.classList.add('border-transparent', 'text-gray-500');
+            upcomingTab.classList.remove('border-blue-500', 'text-blue-600');
+            toReviseTab.classList.add('border-transparent', 'text-gray-500');
+            toReviseTab.classList.remove('border-blue-500', 'text-blue-600');
+            completedContent.classList.remove('hidden');
+            upcomingContent.classList.add('hidden');
+            toReviseContent.classList.add('hidden');
         });
 
         // Calendar rendering
@@ -464,24 +587,20 @@
 
             monthYear.textContent = `${firstDay.toLocaleString('default', { month: 'long' })} ${currentYear}`;
 
-            // Empty days
             for (let i = 0; i < startDay; i++) {
                 calendar.appendChild(document.createElement('div'));
             }
 
-            // Days with revisions
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dateObj = new Date(currentYear, currentMonth, day);
                 const dayDiv = document.createElement('div');
                 dayDiv.classList.add('calendar-day', 'p-2', 'rounded-lg', 'cursor-pointer', 'relative');
                 
-                // Day number
                 const dayNumber = document.createElement('div');
                 dayNumber.textContent = day;
                 dayNumber.classList.add('text-center', 'font-medium');
                 
-                // Check if today
                 if (isCurrentMonth && day === today.getDate()) {
                     dayDiv.classList.add('bg-blue-100', 'border', 'border-blue-200');
                     dayNumber.classList.add('text-blue-600', 'font-bold');
@@ -489,7 +608,6 @@
                 
                 dayDiv.appendChild(dayNumber);
                 
-                // Check for revisions
                 const revisionsOnDay = revisions.flatMap(rev => 
                     rev.revisionDates.filter(rd => rd.date === dateStr)
                         .map(rd => ({ 
@@ -503,23 +621,15 @@
                 );
                 
                 if (revisionsOnDay.length > 0) {
-                    const completedCount = revisionsOnDay.filter(r => r.completed).length;
-                    const totalCount = revisionsOnDay.length;
-                    
-                    // Add indicator
                     const indicator = document.createElement('div');
-                    indicator.classList.add('absolute', 'bottom-1', 'left-0', 'right-0', 'flex', 'justify-center');
+                    indicator.classList.add('absolute', 'bottom-1', 'left-0', 'right-0', 'flex', 'justify-center', 'gap-1');
                     
-                    if (completedCount === totalCount) {
-                        // All completed
-                        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-500"></div>`;
-                    } else if (completedCount > 0) {
-                        // Some completed
-                        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-yellow-500"></div>`;
-                    } else {
-                        // None completed
-                        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-500"></div>`;
-                    }
+                    const subjectsOnDay = [...new Set(revisionsOnDay.map(r => r.subject))];
+                    subjectsOnDay.forEach(subject => {
+                        const dot = document.createElement('div');
+                        dot.classList.add('w-2', 'h-2', 'rounded-full', subjectColors[subject] || 'bg-gray-500');
+                        indicator.appendChild(dot);
+                    });
                     
                     dayDiv.appendChild(indicator);
                 }
@@ -622,15 +732,15 @@
             
             calendarDetails.classList.remove('hidden');
             
-            // Add event listeners for complete and delete buttons
             document.querySelectorAll('.completeBtn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     const date = btn.dataset.date;
+                    lastCompletedRevision = { id, date };
                     revisions = revisions.map(rev => {
                         if (rev.id === id) {
                             rev.revisionDates = rev.revisionDates.map(rd => 
-                                rd.date === date ? { ...rd, completed: true } : rd
+                                rd.date === date ? { ...rd, completed: true, completedAt: new Date().toISOString() } : rd
                             );
                         }
                         return rev;
@@ -639,6 +749,7 @@
                     renderCalendar();
                     renderUpcoming();
                     renderToRevise();
+                    renderCompleted();
                     calculateStats();
                     showCalendarDetails(dateStr, revisions.flatMap(rev => 
                         rev.revisionDates.filter(rd => rd.date === dateStr)
@@ -651,9 +762,7 @@
                                 revisionDate: rd.date
                             }))
                     ));
-                    
-                    // Show success notification
-                    showNotification('Revision marked as completed!', 'success');
+                    showNotification('Revision marked as completed!', 'success', true);
                 });
             });
 
@@ -671,9 +780,9 @@
                     renderCalendar();
                     renderUpcoming();
                     renderToRevise();
+                    renderCompleted();
                     calculateStats();
                     
-                    // Check if there are still revisions for this date
                     const remainingRevisions = revisions.flatMap(rev => 
                         rev.revisionDates.filter(rd => rd.date === dateStr)
                             .map(rd => ({ 
@@ -691,8 +800,6 @@
                     } else {
                         calendarDetails.classList.add('hidden');
                     }
-                    
-                    // Show success notification
                     showNotification('Revision deleted successfully!', 'success');
                 });
             });
@@ -733,14 +840,13 @@
             const upcomingSubtitle = document.getElementById('upcomingSubtitle');
             upcomingList.innerHTML = '';
             const today = new Date().toISOString().split('T')[0];
-            const upcomingRevisions = revisions.flatMap(rev => 
-                rev.revisionDates.filter(rd => rd.date > today && !rd.completed)
-                    .map(rd => ({ ...rev, revisionDate: rd.date }))
-            ).sort((a, b) => a.revisionDate.localeCompare(b.revisionDate));
+            const uniqueRevisions = revisions.filter(rev => 
+                rev.revisionDates.some(rd => rd.date > today && !rd.completed)
+            );
 
-            upcomingSubtitle.textContent = `${upcomingRevisions.length} scheduled`;
+            upcomingSubtitle.textContent = `${uniqueRevisions.length} revisions scheduled`;
             
-            if (upcomingRevisions.length === 0) {
+            if (uniqueRevisions.length === 0) {
                 upcomingList.innerHTML = `
                     <div class="text-center py-8 text-gray-500">
                         <i class="fas fa-calendar-plus text-3xl mb-2 text-gray-300"></i>
@@ -751,34 +857,23 @@
                 return;
             }
 
-            upcomingRevisions.forEach(rev => {
+            uniqueRevisions.forEach(rev => {
                 const div = document.createElement('div');
-                div.classList.add('bg-white', 'rounded-lg', 'shadow-sm', 'p-4', 'fade-in');
-                
-                const dateObj = new Date(rev.revisionDate);
-                const formattedDate = dateObj.toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
+                div.classList.add('bg-white', 'rounded-lg', 'shadow-sm', 'p-4', 'fade-in', 'cursor-pointer');
+                div.addEventListener('click', () => showRevisionDetails(rev));
                 
                 div.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="font-bold text-gray-800 editable-subject" data-id="${rev.id}" contenteditable="false">${rev.subject}</h3>
-                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full">${formattedDate}</span>
+                        <div class="w-3 h-3 rounded-full ${subjectColors[rev.subject] || 'bg-gray-500'}"></div>
                     </div>
                     <p class="text-sm text-gray-600 mb-3">
                         <span class="editable-topic" data-id="${rev.id}" contenteditable="false">${rev.topic}</span>
                         ${rev.subtopics ? ' (<span class="editable-subtopics" data-id="${rev.id}" contenteditable="false">' + rev.subtopics + '</span>)' : ''}
                     </p>
                     <div class="flex justify-end gap-2">
-                        <button class="completeBtn px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 flex items-center gap-1" 
-                            data-id="${rev.id}" data-date="${rev.revisionDate}">
-                            <i class="fas fa-check text-xs"></i>
-                            <span>Complete</span>
-                        </button>
-                        <button class="deleteBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 flex items-center gap-1" 
-                            data-id="${rev.id}" data-date="${rev.revisionDate}">
+                        <button class="deleteRevisionBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 flex items-center gap-1" 
+                            data-id="${rev.id}">
                             <i class="fas fa-trash text-xs"></i>
                             <span>Delete</span>
                         </button>
@@ -787,15 +882,72 @@
                 upcomingList.appendChild(div);
             });
 
-            // Add event listeners for complete and delete buttons
+            setupEditableElements();
+            document.querySelectorAll('.deleteRevisionBtn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    revisions = revisions.filter(rev => rev.id !== id);
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderUpcoming();
+                    renderToRevise();
+                    renderCompleted();
+                    renderCalendar();
+                    calculateStats();
+                    showNotification('Revision deleted successfully!', 'success');
+                });
+            });
+        }
+
+        function showRevisionDetails(rev) {
+            const revisionDetailsModal = document.getElementById('revisionDetailsModal');
+            const revisionSubject = document.getElementById('revisionSubject');
+            const revisionTopic = document.getElementById('revisionTopic');
+            const revisionDates = document.getElementById('revisionDates');
+            
+            revisionSubject.textContent = rev.subject;
+            revisionTopic.textContent = `${rev.topic}${rev.subtopics ? ' (' + rev.subtopics + ')' : ''}`;
+            revisionDates.innerHTML = '';
+            
+            rev.revisionDates.forEach(rd => {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'bg-gray-50', 'rounded');
+                dateDiv.innerHTML = `
+                    <span class="${rd.completed ? 'line-through text-gray-400' : 'text-gray-700'}">
+                        ${new Date(rd.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                    <div class="flex gap-2">
+                        ${!rd.completed ? `
+                            <button class="completeBtn px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600" 
+                                data-id="${rev.id}" data-date="${rd.date}">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="deleteBtn px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600" 
+                                data-id="${rev.id}" data-date="${rd.date}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : `
+                            <span class="text-xs text-green-500">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </span>
+                        `}
+                    </div>
+                `;
+                revisionDates.appendChild(dateDiv);
+            });
+            
+            revisionDetailsModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
             document.querySelectorAll('.completeBtn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     const date = btn.dataset.date;
+                    lastCompletedRevision = { id, date };
                     revisions = revisions.map(rev => {
                         if (rev.id === id) {
                             rev.revisionDates = rev.revisionDates.map(rd => 
-                                rd.date === date ? { ...rd, completed: true } : rd
+                                rd.date === date ? { ...rd, completed: true, completedAt: new Date().toISOString() } : rd
                             );
                         }
                         return rev;
@@ -803,11 +955,11 @@
                     localStorage.setItem('revisions', JSON.stringify(revisions));
                     renderUpcoming();
                     renderToRevise();
+                    renderCompleted();
                     renderCalendar();
                     calculateStats();
-                    
-                    // Show success notification
-                    showNotification('Revision marked as completed!', 'success');
+                    showRevisionDetails(revisions.find(r => r.id === id));
+                    showNotification('Revision marked as completed!', 'success', true);
                 });
             });
 
@@ -824,14 +976,24 @@
                     localStorage.setItem('revisions', JSON.stringify(revisions));
                     renderUpcoming();
                     renderToRevise();
+                    renderCompleted();
                     renderCalendar();
                     calculateStats();
-                    
-                    // Show success notification
-                    showNotification('Revision deleted successfully!', 'success');
+                    if (revisions.find(r => r.id === id)) {
+                        showRevisionDetails(revisions.find(r => r.id === id));
+                    } else {
+                        revisionDetailsModal.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
+                    showNotification('Revision date deleted successfully!', 'success');
                 });
             });
         }
+
+        document.getElementById('closeRevisionDetailsBtn').addEventListener('click', () => {
+            document.getElementById('revisionDetailsModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        });
 
         function renderToRevise() {
             const toReviseList = document.getElementById('toReviseList');
@@ -863,7 +1025,7 @@
                 div.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="font-bold text-gray-800">${rev.subject}</h3>
-                        <span class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full pulse">Due Today</span>
+                        <div class="w-3 h-3 rounded-full ${subjectColors[rev.subject] || 'bg-gray-500'}"></div>
                     </div>
                     <p class="text-sm text-gray-600 mb-3">${rev.topic}${rev.subtopics ? ' (' + rev.subtopics + ')' : ''}</p>
                     <div class="flex justify-end gap-2">
@@ -882,15 +1044,15 @@
                 toReviseList.appendChild(div);
             });
 
-            // Add event listeners for complete and delete buttons
             document.querySelectorAll('.completeBtn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     const date = btn.dataset.date;
+                    lastCompletedRevision = { id, date };
                     revisions = revisions.map(rev => {
                         if (rev.id === id) {
                             rev.revisionDates = rev.revisionDates.map(rd => 
-                                rd.date === date ? { ...rd, completed: true } : rd
+                                rd.date === date ? { ...rd, completed: true, completedAt: new Date().toISOString() } : rd
                             );
                         }
                         return rev;
@@ -898,11 +1060,10 @@
                     localStorage.setItem('revisions', JSON.stringify(revisions));
                     renderUpcoming();
                     renderToRevise();
+                    renderCompleted();
                     renderCalendar();
                     calculateStats();
-                    
-                    // Show success notification
-                    showNotification('Revision marked as completed!', 'success');
+                    showNotification('Revision marked as completed!', 'success', true);
                 });
             });
 
@@ -919,17 +1080,84 @@
                     localStorage.setItem('revisions', JSON.stringify(revisions));
                     renderUpcoming();
                     renderToRevise();
+                    renderCompleted();
                     renderCalendar();
                     calculateStats();
-                    
-                    // Show success notification
                     showNotification('Revision deleted successfully!', 'success');
                 });
             });
         }
 
+        function renderCompleted() {
+            const completedList = document.getElementById('completedList');
+            const completedSubtitle = document.getElementById('completedSubtitle');
+            completedList.innerHTML = '';
+            const completedRevisions = revisions.flatMap(rev => 
+                rev.revisionDates.filter(rd => rd.completed)
+                    .map(rd => ({ ...rev, completedDate: rd.completedAt }))
+            );
+
+            completedSubtitle.textContent = `${completedRevisions.length} completed`;
+            
+            if (completedRevisions.length === 0) {
+                completedList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-check-circle text-3xl mb-2 text-gray-300"></i>
+                        <p>No completed revisions</p>
+                        <p class="text-sm mt-2">Complete some revisions to see them here!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const groupedBySubject = completedRevisions.reduce((acc, rev) => {
+                if (!acc[rev.subject]) {
+                    acc[rev.subject] = [];
+                }
+                acc[rev.subject].push(rev);
+                return acc;
+            }, {});
+
+            for (const subject in groupedBySubject) {
+                const subjectDiv = document.createElement('div');
+                subjectDiv.classList.add('mb-4');
+                
+                const completed = groupedBySubject[subject].length;
+                const total = revisions.find(r => r.subject === subject)?.revisionDates.length || 0;
+                const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+                
+                subjectDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-gray-800">${subject}</h3>
+                        <div class="w-3 h-3 rounded-full ${subjectColors[subject] || 'bg-gray-500'}"></div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                        <div class="bg-green-500 h-2.5 rounded-full progress-bar" style="width: ${progress}%"></div>
+                    </div>
+                `;
+                
+                const topicsList = document.createElement('div');
+                topicsList.classList.add('space-y-2');
+                
+                groupedBySubject[subject].forEach(rev => {
+                    const topicDiv = document.createElement('div');
+                    topicDiv.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'bg-gray-50', 'rounded');
+                    topicDiv.innerHTML = `
+                        <p class="text-sm text-gray-700">${rev.topic}${rev.subtopics ? ' (' + rev.subtopics + ')' : ''}</p>
+                        <span class="text-xs text-gray-500">
+                            Completed on ${new Date(rev.completedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                    `;
+                    topicsList.appendChild(topicDiv);
+                });
+                
+                subjectDiv.appendChild(topicsList);
+                completedList.appendChild(subjectDiv);
+            }
+        }
+
         // Notification system
-        function showNotification(message, type) {
+        function showNotification(message, type, withUndo = false) {
             const notification = document.createElement('div');
             notification.classList.add('fixed', 'bottom-4', 'right-4', 'p-4', 'rounded-lg', 'shadow-lg', 'text-white', 'flex', 'items-center', 'gap-3', 'z-50', 'fade-in');
             
@@ -938,6 +1166,11 @@
                 notification.innerHTML = `
                     <i class="fas fa-check-circle"></i>
                     <span>${message}</span>
+                    ${withUndo && lastCompletedRevision ? `
+                        <button id="undoBtn" class="ml-4 px-2 py-1 bg-white text-green-500 rounded text-xs hover:bg-gray-100">
+                            Undo
+                        </button>
+                    ` : ''}
                 `;
             } else {
                 notification.classList.add('bg-red-500');
@@ -948,6 +1181,29 @@
             }
             
             document.body.appendChild(notification);
+            
+            if (withUndo && lastCompletedRevision) {
+                const undoBtn = notification.querySelector('#undoBtn');
+                undoBtn.addEventListener('click', () => {
+                    const { id, date } = lastCompletedRevision;
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.map(rd => 
+                                rd.date === date ? { ...rd, completed: false, completedAt: null } : rd
+                            );
+                        }
+                        return rev;
+                    });
+                    localStorage.setItem('revisions', JSON.stringify(revisions));
+                    renderUpcoming();
+                    renderToRevise();
+                    renderCompleted();
+                    renderCalendar();
+                    calculateStats();
+                    notification.remove();
+                    showNotification('Revision completion undone!', 'success');
+                });
+            }
             
             setTimeout(() => {
                 notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
@@ -962,28 +1218,28 @@
         searchInput.addEventListener('input', () => {
             renderUpcoming();
             renderToRevise();
+            renderCompleted();
         });
 
         // Filter subjects dropdown
         function updateSubjectFilter() {
             const filterSubject = document.getElementById('filterSubject');
-            const subjects = [...new Set(revisions.map(rev => rev.subject))];
-            
-            // Clear existing options except "All Subjects"
-            while (filterSubject.options.length > 1) {
-                filterSubject.remove(1);
-            }
-            
-            // Add subjects
+            const clearSubject = document.getElementById('clearSubject');
+            filterSubject.innerHTML = '<option value="">All Subjects</option>';
+            clearSubject.innerHTML = '<option value="">All Subjects</option>';
             subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                filterSubject.appendChild(option);
+                const option1 = document.createElement('option');
+                option1.value = subject;
+                option1.textContent = subject;
+                filterSubject.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = subject;
+                option2.textContent = subject;
+                clearSubject.appendChild(option2);
             });
         }
 
-        // Filter status functionality
         const filterSubject = document.getElementById('filterSubject');
         const filterStatus = document.getElementById('filterStatus');
         
@@ -991,6 +1247,7 @@
             filter.addEventListener('change', () => {
                 renderUpcoming();
                 renderToRevise();
+                renderCompleted();
             });
         });
 
@@ -1003,6 +1260,7 @@
         clearAllBtn.addEventListener('click', () => {
             clearAllModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
+            updateSubjectFilter();
         });
         
         cancelClearAllBtns.forEach(btn => {
@@ -1013,15 +1271,21 @@
         });
         
         confirmClearAllBtn.addEventListener('click', () => {
-            revisions = [];
+            const clearSubject = document.getElementById('clearSubject').value;
+            if (clearSubject) {
+                revisions = revisions.filter(rev => rev.subject !== clearSubject);
+            } else {
+                revisions = [];
+            }
             localStorage.setItem('revisions', JSON.stringify(revisions));
             clearAllModal.classList.add('hidden');
             document.body.style.overflow = '';
             renderCalendar();
             renderUpcoming();
             renderToRevise();
+            renderCompleted();
             calculateStats();
-            showNotification('All revisions cleared successfully!', 'success');
+            showNotification(clearSubject ? `All revisions for ${clearSubject} cleared!` : 'All revisions cleared!', 'success');
         });
 
         // Edit functionality
@@ -1062,7 +1326,50 @@
             });
         }
 
-        // Modify render functions to include search and filter
+        // Export/Import functionality
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const data = { revisions, subjects };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'revision_tracker_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data exported successfully!', 'success');
+        });
+
+        document.getElementById('importBtn').addEventListener('click', () => {
+            document.getElementById('importFile').click();
+        });
+
+        document.getElementById('importFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        revisions = data.revisions || [];
+                        subjects = data.subjects || subjects;
+                        localStorage.setItem('revisions', JSON.stringify(revisions));
+                        localStorage.setItem('subjects', JSON.stringify(subjects));
+                        renderCalendar();
+                        renderUpcoming();
+                        renderToRevise();
+                        renderCompleted();
+                        calculateStats();
+                        updateSubjectFilter();
+                        showNotification('Data imported successfully!', 'success');
+                    } catch (err) {
+                        showNotification('Failed to import data!', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Filter revisions
         function filterRevisions(revisionsList) {
             const searchTerm = searchInput.value.toLowerCase();
             const subjectFilter = filterSubject.value;
@@ -1086,64 +1393,14 @@
             });
         }
 
-        // Google Sheets integration
-        function saveRevisionToGoogleSheet(revision) {
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyF_tytlrBeZ5Pu6K-SKcbEA9v0mEKsLkkd7wovzq4eC7SAJy2s1h4Ws1cozPoEVnIHIw/exec';
-            
-            const payload = {
-                subject: revision.subject,
-                topic: revision.topic,
-                subtopics: revision.subtopics || '',
-                revisionDates: revision.revisionDates,
-                totalRevisions: revision.revisionDates.length,
-                completedCount: revision.revisionDates.filter(rd => rd.completed).length,
-                nextRevisionDate: getNextRevisionDate(revision.revisionDates),
-                createdAt: revision.createdAt
-            };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                mode: 'cors',
-                redirect: 'follow'
-            })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.text();
-            })
-            .then(text => {
-                if (text === "Success") {
-                    showNotification("रिवीजन Google Sheet में सफलतापूर्वक सेव हो गया!", 'success');
-                } else {
-                    throw new Error(text);
-                }
-            })
-            .catch(err => {
-                console.error('Google Sheet Error:', err);
-                showNotification(`Google Sheet में सेव करने में असफल: ${err.message}`, 'error');
-            });
-        }
-
-        function getNextRevisionDate(datesArray) {
-            if (!Array.isArray(datesArray)) return '';
-            const today = new Date().toISOString().split('T')[0];
-            const upcoming = datesArray.find(rd => rd.date >= today);
-            return upcoming ? upcoming.date : '';
-        }
-
-        // Update initial render calls
+        // Initial render
         function init() {
             renderCalendar();
             renderUpcoming();
             renderToRevise();
+            renderCompleted();
             calculateStats();
             updateSubjectFilter();
-            setupEditableElements();
         }
 
         init();
