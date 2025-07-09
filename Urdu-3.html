@@ -3,172 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>اردو کی محبت - A Special Place for You</title>
+  <title>MJC-3 : Study of Urdu Nazm</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-    body { 
-      background: linear-gradient(to right, #ff9a9e, #fad0c4); 
-      min-height: 100vh; 
-      padding: 40px 20px 60px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      color: #fff; 
-      position: relative; 
-      overflow-x: hidden; 
-    }
-    h1 { 
-      font-family: 'Noto Nastaliq Urdu', serif; 
-      font-size: 2.2rem; 
-      text-align: center; 
-      background: linear-gradient(to right, #fff, #ffe4e1); 
-      -webkit-background-clip: text; 
-      -webkit-text-fill-color: transparent; 
-      margin-bottom: 10px; 
-    }
-    .personal-note { 
-      font-family: 'Noto Nastaliq Urdu', serif; 
-      font-size: 1.1rem; 
-      text-align: center; 
-      color: #fff; 
-      margin-bottom: 20px; 
-      opacity: 0; 
-      animation: fadeIn 2s ease-in forwards; 
-    }
-    .card-container { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-      gap: 20px; 
-      width: 100%; 
-      max-width: 1000px; 
-      padding: 0 10px; 
-    }
-    .card { 
-      background: rgba(255, 255, 255, 0.2); 
-      border-radius: 20px; 
-      padding: 20px; 
-      text-align: center; 
-      text-decoration: none; 
-      color: #fff; 
-      transition: all 0.3s ease; 
-      backdrop-filter: blur(5px); 
-      border: 1px solid rgba(255, 255, 255, 0.3); 
-    }
-    .card:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 0 20px rgba(255, 105, 180, 0.5); 
-    }
-    .card h2 { 
-      font-family: 'Noto Nastaliq Urdu', serif; 
-      font-size: 1.2rem; 
-      margin-bottom: 10px; 
-    }
-    .surprise-btn { 
-      margin: 20px 0; 
-      padding: 10px 20px; 
-      background: #ff6f91; 
-      border: none; 
-      border-radius: 20px; 
-      color: #fff; 
-      font-size: 1rem; 
-      cursor: pointer; 
-      transition: all 0.3s ease; 
-    }
-    .surprise-btn:hover { 
-      background: #ff4d73; 
-      transform: scale(1.1); 
-    }
-    #shayari { 
-      font-family: 'Noto Nastaliq Urdu', serif; 
-      font-size: 1.1rem; 
-      color: #fff; 
-      text-align: center; 
-      margin: 20px 0; 
-      display: none; 
-      animation: fadeIn 1s ease-in forwards; 
-    }
-    footer { 
-      margin-top: 60px; 
-      text-align: center; 
-      font-size: 0.85rem; 
-      padding: 0 10px; 
-    }
-    .social-links a { 
-      margin: 0 10px; 
-      color: #ff6f91; 
-      text-decoration: none; 
-      font-size: 1rem; 
-      transition: all 0.3s ease; 
-    }
-    .social-links a:hover { 
-      color: #fff; 
-    }
-    .made-with-love { 
-      margin-top: 10px; 
-      font-size: 0.9rem; 
-      color: #fff; 
-      animation: pulse 2s infinite; 
-    }
-    @keyframes fadeIn { 
-      from { opacity: 0; } 
-      to { opacity: 1; } 
-    }
-    @keyframes pulse { 
-      0% { transform: scale(1); } 
-      50% { transform: scale(1.1); } 
-      100% { transform: scale(1); } 
-    }
-    .heart { 
-      position: absolute; 
-      width: 20px; 
-      height: 20px; 
-      background: #ff6f91; 
-      transform: rotate(-45deg); 
-      animation: float 6s ease-in-out infinite; 
-    }
-    .heart::before, .heart::after { 
-      content: ''; 
-      width: 20px; 
-      height: 20px; 
-      background: #ff6f91; 
-      border-radius: 50%; 
-      position: absolute; 
-    }
-    .heart::before { top: -10px; left: 0; }
-    .heart::after { left: 10px; top: 0; }
-    @keyframes float { 
-      0% { transform: translateY(0) rotate(-45deg); opacity: 1; } 
-      100% { transform: translateY(-100vh) rotate(-45deg); opacity: 0; } 
-    }
+    body { background: linear-gradient(to right, #667eea, #764ba2); min-height: 100vh; padding: 40px 20px 60px; display: flex; flex-direction: column; align-items: center; color: #fff; }
+    h1 { font-size: 2.2rem; text-align: center; background: linear-gradient(to right, #ffffff, #f5f6fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 30px; }
+    .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; padding: 0 10px; }
+    .card { background: rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 20px; text-align: center; text-decoration: none; color: #fff; transition: all 0.3s ease; }
+    .card:hover { transform: translateY(-5px); }
+    .card h2 { font-size: 1.2rem; margin-bottom: 10px; }
+    footer { margin-top: 60px; text-align: center; font-size: 0.85rem; padding: 0 10px; }
+    .social-links a { margin: 0 8px; color: #fd79a8; text-decoration: none; font-size: 1rem; }
     @media screen and (max-width: 480px) {
       h1 { font-size: 1.6rem; }
-      .personal-note { font-size: 0.9rem; }
       .card-container { gap: 15px; }
       .card { padding: 15px; }
-      .surprise-btn { font-size: 0.9rem; padding: 8px 16px; }
     }
   </style>
 </head>
 <body>
-  <div class="heart" style="left: 10%; animation-delay: 0s;"></div>
-  <div class="heart" style="left: 30%; animation-delay: 1s;"></div>
-  <div class="heart" style="left: 50%; animation-delay: 2s;"></div>
-  <div class="heart" style="left: 70%; animation-delay: 3s;"></div>
-  <div class="heart" style="left: 90%; animation-delay: 4s;"></div>
 
-  <h1>اردو کی محبت - ایک خاص شخص کے لیے</h1>
-  <p class="personal-note">کلاس ۱۲ سے دل میں ایک نام بستا ہے، دیکھا نہ سہی پر احساس تم تک پہنچتا ہے ❤️</p>
-
-  <button class="surprise-btn" onclick="showShayari()">سرپرائز کے لیے کلک کریں</button>
-  <p id="shayari"></p>
+  <h1>MJC-3 : Study of Urdu Nazm (ردو نظم کا مطالعہ))</h1>
 
   <div class="card-container">
-    <a href="https://docs.google.com/document/d/1YxyYLO7x68UywJggj_Ee1fZUOY-jrC-BjJKtsXgYRHM/edit?usp=sharing" class="card"><h2>📚 نصاب</h2></a>
-    <a href="https://docs.google.com/document/d/1lRmCzvyp6hQ08HstfE1DDq6hF1Ssk2cm-Tcub2NJx_s/export?format=pdf" class="card"><h2>📝 نوٹس</h2></a>
-    <a href="https://docs.google.com/document/d/1example_VVI_topics/export?format=pdf" class="card"><h2>🔥 اہم موضوعات</h2></a>
+    <a href="https://docs.google.com/document/d/1YxyYLO7x68UywJggj_Ee1fZUOY-jrC-BjJKtsXgYRHM/export?format=pdf" class="card"><h2>📚 Syllabus</h2></a>
+    <a href="https://docs.google.com/document/d/1lRmCzvyp6hQ08HstfE1DDq6hF1Ssk2cm-Tcub2NJx_s/export?format=pdf" class="card"><h2>📝 Notes</h2></a>
+    <a href="" class="card"><h2>🔥 VVI Topics (Coming Soon)</h2></a>
   </div>
 
   <footer>
@@ -177,23 +39,9 @@
       <a href="https://whatsapp.com/channel/0029VajiRmkFi8xmRZUzly0I" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
       <a href="mailto:studypace.ba@gmail.com"><i class="fas fa-envelope"></i> Email</a>
     </div>
-    <p>کوئی شک ہو تو میسج کر دو، دل سے جواب دوں گا!</p>
-    <p class="made-with-love">Made with ❤️ for someone special</p>
-    <p>© 2025 StudySpace</p>
+    <p>If you have any doubt, message kr lo yrr, jawab dene ki kosis krunga</p>
+    <p>© 2025 StudyPace</p>
   </footer>
 
-  <script>
-    const shayaris = [
-      "تم ہو کہ چاندنی راتوں کا نور ہو، دل میں بسا ہے تمہارا ہی سورور ہو۔",
-      "دل سے دل تک جو بات جاتی ہے، وہ عُشق کی زُبان میں ہی سمجھ آتی ہے۔",
-      "تمہاری ایک مسکراہٹ پر دل بےقرار ہے، عُردو کی نظموں میں بس تمہارا ہی خیال ہے۔"
-    ];
-    function showShayari() {
-      const shayariElement = document.getElementById('shayari');
-      const randomShayari = shayaris[Math.floor(Math.random() * shayaris.length)];
-      shayariElement.textContent = randomShayari;
-      shayariElement.style.display = 'block';
-    }
-  </script>
 </body>
 </html>
