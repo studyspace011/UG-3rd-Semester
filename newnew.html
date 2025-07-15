@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spaced Repetition Revision Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS Animations for a smoother UI */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Specific styles for the progress ring in stats card */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Floating action buttons styling */
+        .floating-btn {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Calendar day hover effect */
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Tab content transition */
+        .tab-content {
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Modal specific animations and backdrop blur */
+        .modal-content {
+            animation: modalFadeIn 0.3s ease-out;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Progress bar transition */
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header Section -->
+        <header class="flex flex-col gap-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-book-open text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">रिवीजन ट्रैकर (Revision Tracker)</h1>
+                        <p class="text-gray-600">स्पेसड रिपीटिशन के साथ अपने विषयों में महारत हासिल करें</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <button id="addRevisionBtn" class="floating-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-blue-600 hover:to-blue-700">
+                        <i class="fas fa-plus"></i>
+                        <span>नया रिवीजन जोड़ें</span>
+                    </button>
+                    <button id="exportBtn" class="floating-btn bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-green-600 hover:to-green-700">
+                        <i class="fas fa-download"></i>
+                        <span>निर्यात करें</span>
+                    </button>
+                    <button id="importBtn" class="floating-btn bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-full flex items-center gap-2 hover:from-purple-600 hover:to-purple-700">
+                        <i class="fas fa-upload"></i>
+                        <span>आयात करें</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search and Filter Row -->
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="विषय या टॉपिक द्वारा खोजें...">
+                </div>
+                
+                <div class="flex gap-2">
+                    <select id="filterSubject" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">सभी विषय</option>
+                    </select>
+                    
+                    <select id="filterStatus" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">सभी स्थिति</option>
+                        <option value="completed">पूर्ण</option>
+                        <option value="pending">लंबित</option>
+                    </select>
+                    
+                    <button id="clearAllBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>सभी हटाएँ</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Stats Cards Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 fade-in">
+                <div class="relative w-16 h-16">
+                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                        <path class="text-gray-200" d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"/>
+                        <path class="text-green-500 progress-ring__circle" stroke-dasharray="100, 100" d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-gray-700" id="completionRate">0%</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium">पूर्णता दर</h3>
+                    <p class="text-2xl font-bold text-gray-800" id="completedCount">0</p>
+                    <p class="text-sm text-gray-500">निर्धारित रिवीजनों में से</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 fade-in" style="animation-delay: 0.1s">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                    <i class="fas fa-calendar-day text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium">आज के रिवीजन</h3>
+                    <p class="text-2xl font-bold text-gray-800" id="todayCount">0</p>
+                    <p class="text-sm text-gray-500">आज पूरे करने हैं</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 fade-in" style="animation-delay: 0.2s">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-500">
+                    <i class="fas fa-clock text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium">आगामी</h3>
+                    <p class="text-2xl font-bold text-gray-800" id="upcomingCount">0</p>
+                    <p class="text-sm text-gray-500">इस सप्ताह के रिवीजन</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Chart Section -->
+        <div class="bg-white rounded-xl shadow-md p-6 mt-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">रिवीजन प्रगति चार्ट</h2>
+            <canvas id="progressChart"></canvas>
+        </div>
+
+        <!-- Clear All Confirmation Modal -->
+        <div id="clearAllModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-r from-red-500 to-red-600 p-4 text-white">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">सभी हटाने की पुष्टि करें</h2>
+                        <button id="cancelClearAllBtn" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-700 mb-4">क्या आप वाकई सभी रिवीजनों को हटाना चाहते हैं? यह कार्रवाई पूर्ववत नहीं की जा सकती।</p>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">वैकल्पिक: विशिष्ट विषय हटाएँ</label>
+                        <select id="clearSubject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">सभी विषय</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button id="confirmClearAllBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                            हाँ, हटाएँ
+                        </button>
+                        <button id="cancelClearAllBtn2" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            रद्द करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Revision Modal -->
+        <div id="addRevisionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">नया रिवीजन जोड़ें</h2>
+                        <button id="cancelBtn" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <form id="revisionForm" class="p-6">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">विषय</label>
+                        <div class="flex gap-2">
+                            <select id="subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="">विषय चुनें</option>
+                            </select>
+                            <button type="button" id="addNewSubjectBtn" class="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="newSubjectInput" class="hidden mt-2">
+                            <input type="text" id="newSubject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="नया विषय दर्ज करें">
+                            <button type="button" id="saveNewSubjectBtn" class="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">विषय सहेजें</button>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">टॉपिक</label>
+                        <div class="relative">
+                            <input type="text" id="topic" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-tag text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">सबटॉपिक (उदाहरण: 1.1.1 से 1.1.5)</label>
+                        <div class="relative">
+                            <input type="text" id="subtopics" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-list-ol text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-8">
+                        <button type="button" id="resetBtn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            रीसेट करें
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>रिवीजन जोड़ें</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Revision Details Modal -->
+        <div id="revisionDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">रिवीजन विवरण</h2>
+                        <button id="closeRevisionDetailsBtn" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 id="revisionSubject" class="text-lg font-bold text-gray-800 mb-2"></h3>
+                    <p id="revisionTopic" class="text-sm text-gray-600 mb-4"></p>
+                    <div id="revisionDates" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calendar Section -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">रिवीजन कैलेंडर</h2>
+                        <div class="flex items-center gap-2">
+                            <button id="prevMonth" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="todayBtn" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition text-sm">
+                                आज
+                            </button>
+                            <button id="nextMonth" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="monthYear" class="text-center text-xl font-semibold text-gray-700 mb-4"></div>
+                    
+                    <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                        <div class="font-medium text-gray-500 text-sm py-2">रवि</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">सोम</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">मंगल</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">बुध</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">गुरु</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">शुक्र</div>
+                        <div class="font-medium text-gray-500 text-sm py-2">शनि</div>
+                    </div>
+                    
+                    <div id="calendar" class="grid grid-cols-7 gap-1 text-center"></div>
+                    
+                    <!-- Calendar Legend -->
+                    <div class="mt-4 flex flex-wrap gap-4">
+                        <div class="text-sm text-gray-600">लीजेंड:</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div><span>मैक्रोइकॉनॉमिक्स</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div><span>स्टेटिक्स</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><span>इतिहास</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div><span>हिंदी</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-500"></div><span>संचार</span></div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div><span>आपदा जोखिम प्रबंधन</span></div>
+                    </div>
+                    
+                    <div id="calendarDetails" class="mt-6 bg-gray-50 rounded-lg p-4 hidden">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-bold text-gray-800" id="detailsDate"></h3>
+                            <button id="closeDetails" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="detailsContent" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="flex border-b">
+                    <button id="upcomingTab" class="flex-1 py-3 font-medium text-center border-b-2 border-blue-500 text-blue-600">
+                        <i class="fas fa-calendar-alt mr-2"></i>आगामी
+                    </button>
+                    <button id="toReviseTab" class="flex-1 py-3 font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-tasks mr-2"></i>रिवीजन के लिए
+                    </button>
+                    <button id="completedTab" class="flex-1 py-3 font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-check-circle mr-2"></i>पूर्ण
+                    </button>
+                </div>
+                
+                <div id="upcomingContent" class="tab-content p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">आगामी रिवीजन</h2>
+                        <div class="text-sm text-gray-500" id="upcomingSubtitle"></div>
+                    </div>
+                    <div id="upcomingList" class="space-y-3"></div>
+                </div>
+                
+                <div id="toReviseContent" class="tab-content p-4 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">आज रिवीजन के लिए</h2>
+                        <div class="text-sm text-gray-500" id="toReviseSubtitle"></div>
+                    </div>
+                    <div id="toReviseList" class="space-y-3"></div>
+                </div>
+                
+                <div id="completedContent" class="tab-content p-4 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">पूर्ण रिवीजन</h2>
+                        <div class="text-sm text-gray-500" id="completedSubtitle"></div>
+                    </div>
+                    <div id="completedList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden input for file import -->
+    <input type="file" id="importFile" class="hidden" accept=".json">
+
+    <script>
+        // Initialize data variables
+        let revisions = []; // Stores all revision data
+        let subjects = [ // Initial list of subjects
+            'Macroeconomics', 'Statics', 'History', 'Hindi', 'Communication', 'Disaster Risk Management'
+        ];
+        let currentDate = new Date(); // Current date for calendar
+        let currentMonth = currentDate.getMonth(); // Current month for calendar
+        let currentYear = currentDate.getFullYear(); // Current year for calendar
+        let lastCompletedRevision = null; // To store info for undo functionality
+        
+        // IMPORTANT: Your Google Apps Script Web App URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby5zZeXooRqU2PoeCHNM-C-E0k8-vxMoDQx4cOFVnJEHQ1YfuUseyyRP3UbaGu7ABh5/exec';
+
+        // Define colors for subjects for visual distinction
+        const subjectColors = {
+            'Macroeconomics': 'bg-blue-500',
+            'Statics': 'bg-green-500',
+            'History': 'bg-red-500',
+            'Hindi': 'bg-yellow-500',
+            'Communication': 'bg-purple-500',
+            'Disaster Risk Management': 'bg-orange-500'
+        };
+
+        /**
+         * Loads revision data from the Google Apps Script backend.
+         * Updates the global 'revisions' and 'subjects' arrays.
+         * Renders all UI components after data is loaded.
+         */
+        async function loadRevisions() {
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getRevisions' }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const data = await response.json();
+                
+                // The Apps Script now sends grouped data, so no need for further grouping here
+                revisions = data; 
+
+                // Update subjects based on loaded revisions
+                subjects = [...new Set(revisions.map(r => r.subject))];
+                
+                // Render all UI components after data is loaded
+                renderAllContent(); 
+            } catch (error) {
+                console.error('Error loading revisions:', error);
+                showNotification(`रिवीजन लोड करने में विफल! ${error.message}`, 'error'); // Failed to load revisions!
+            }
+        }
+
+        /**
+         * Helper function to render all main UI components.
+         * Called after data loading or significant data changes.
+         */
+        function renderAllContent() {
+            renderCalendar();
+            renderUpcoming();
+            renderToRevise();
+            renderCompleted();
+            calculateStats();
+            updateSubjectFilter();
+            renderProgressChart();
+        }
+
+        /**
+         * Calculates and updates the statistics displayed in the cards.
+         * Includes completion rate, today's revisions, and upcoming revisions.
+         */
+        function calculateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            let totalScheduled = 0;
+            let completed = 0;
+            let todayRevisions = 0;
+            let upcomingWeek = 0;
+
+            const weekFromNow = new Date();
+            weekFromNow.setDate(weekFromNow.getDate() + 7);
+            const weekFromNowStr = weekFromNow.toISOString().split('T')[0];
+
+            revisions.forEach(rev => {
+                rev.revisionDates.forEach(rd => {
+                    totalScheduled++;
+                    if (rd.completed) {
+                        completed++;
+                    }
+                    if (rd.date === today && !rd.completed) {
+                        todayRevisions++;
+                    }
+                    if (rd.date > today && rd.date <= weekFromNowStr && !rd.completed) {
+                        upcomingWeek++;
+                    }
+                });
+            });
+            
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('todayCount').textContent = todayRevisions;
+            document.getElementById('upcomingCount').textContent = upcomingWeek;
+            
+            const completionRate = totalScheduled > 0 ? Math.round((completed / totalScheduled) * 100) : 0;
+            document.getElementById('completionRate').textContent = `${completionRate}%`;
+            
+            // Update the progress ring SVG
+            const circle = document.querySelector('.progress-ring__circle');
+            if (circle) {
+                const radius = circle.r.baseVal.value;
+                const circumference = radius * 2 * Math.PI;
+                const offset = circumference - (completionRate / 100) * circumference;
+                circle.style.strokeDasharray = `${circumference} ${circumference}`;
+                circle.style.strokeDashoffset = offset;
+            }
+        }
+
+        /**
+         * Renders the progress chart using Chart.js.
+         * Destroys existing chart instance before creating a new one to prevent memory leaks.
+         */
+        let chartInstance = null;
+        function renderProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const today = new Date().toISOString().split('T')[0];
+            let completedCount = 0;
+            let pendingCount = 0;
+            let upcomingCount = 0;
+
+            revisions.forEach(rev => {
+                rev.revisionDates.forEach(rd => {
+                    if (rd.completed) {
+                        completedCount++;
+                    } else if (rd.date <= today) { // Pending includes today or overdue
+                        pendingCount++;
+                    } else { // Upcoming is future dates
+                        upcomingCount++;
+                    }
+                });
+            });
+
+            if (chartInstance) {
+                chartInstance.destroy(); // Destroy existing chart if any
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['पूर्ण (Completed)', 'लंबित (Pending)', 'आगामी (Upcoming)'],
+                    datasets: [{
+                        label: 'रिवीजन स्थिति (Revision Status)',
+                        data: [completedCount, pendingCount, upcomingCount],
+                        backgroundColor: ['#4CAF50', '#FF9800', '#2196F3'],
+                        borderColor: ['#388E3C', '#F57C00', '#1976D2'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#333'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'रिवीजन प्रगति (Revision Progress)',
+                            color: '#333',
+                            font: {
+                                size: 18
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'रिवीजनों की संख्या (Number of Revisions)',
+                                color: '#333'
+                            },
+                            ticks: {
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Modal Handling ---
+        const addRevisionBtn = document.getElementById('addRevisionBtn');
+        const addRevisionModal = document.getElementById('addRevisionModal');
+        const revisionForm = document.getElementById('revisionForm');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const addNewSubjectBtn = document.getElementById('addNewSubjectBtn');
+        const newSubjectInput = document.getElementById('newSubjectInput');
+        const newSubject = document.getElementById('newSubject');
+        const saveNewSubjectBtn = document.getElementById('saveNewSubjectBtn');
+
+        addRevisionBtn.addEventListener('click', () => {
+            addRevisionModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+            updateSubjectDropdown(); // Populate subject dropdown
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            addRevisionModal.classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scrolling
+            revisionForm.reset(); // Clear form fields
+            newSubjectInput.classList.add('hidden'); // Hide new subject input
+        });
+
+        resetBtn.addEventListener('click', () => {
+            revisionForm.reset();
+            newSubjectInput.classList.add('hidden');
+        });
+
+        addNewSubjectBtn.addEventListener('click', () => {
+            newSubjectInput.classList.toggle('hidden'); // Toggle visibility of new subject input
+        });
+
+        saveNewSubjectBtn.addEventListener('click', () => {
+            const newSub = newSubject.value.trim();
+            if (newSub && !subjects.includes(newSub)) {
+                subjects.push(newSub); // Add new subject to the list
+                updateSubjectDropdown(); // Update dropdowns
+                newSubjectInput.classList.add('hidden');
+                newSubject.value = '';
+                showNotification('नया विषय जोड़ा गया!', 'success'); // New subject added!
+            } else {
+                showNotification('विषय पहले से मौजूद है या खाली है!', 'error'); // Subject already exists or is empty!
+            }
+        });
+
+        /**
+         * Populates the subject dropdowns (add revision and filter).
+         */
+        function updateSubjectDropdown() {
+            const subjectSelect = document.getElementById('subject');
+            subjectSelect.innerHTML = '<option value="">विषय चुनें</option>'; // Select Subject
+            subjects.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                subjectSelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Handles the submission of the revision form.
+         * Calculates spaced repetition dates and sends data to Apps Script.
+         */
+        revisionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subject = document.getElementById('subject').value;
+            const topic = document.getElementById('topic').value;
+            const subtopics = document.getElementById('subtopics').value;
+            const startDate = new Date(); // Start date for revision calculation
+
+            // Calculate spaced repetition dates
+            const revisionDates = [
+                new Date(startDate.getTime() + 1 * 24 * 60 * 60 * 1000), // Day 1
+                new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000), // Day 3
+                new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000), // Day 7
+                new Date(startDate.getTime() + 15 * 24 * 60 * 60 * 1000), // Day 15
+                new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // Day 30
+            ].map(date => ({ date: date.toISOString().split('T')[0], completed: false, completedAt: '' }));
+
+            const newRevision = { 
+                id: Date.now(), // Unique ID for the revision
+                subject, 
+                topic, 
+                subtopics, 
+                revisionDates, // Array of revision dates
+                createdAt: new Date().toISOString() // Creation timestamp
+            };
+
+            try {
+                // Send the entire revision object to the Apps Script
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'addRevision',
+                        ...newRevision // Spread the newRevision object
+                    }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // Add the new revision to our local array
+                    revisions.push(newRevision); 
+                    addRevisionModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    revisionForm.reset();
+                    renderAllContent(); // Re-render all UI
+                    showNotification('रिवीजन सफलतापूर्वक जोड़ा गया!', 'success'); // Revision added successfully!
+                } else {
+                    throw new Error(result.message || 'Failed to add revision');
+                }
+            } catch (error) {
+                console.error('Error adding revision:', error);
+                showNotification(`रिवीजन जोड़ने में विफल! ${error.message}`, 'error'); // Failed to add revision!
+            }
+        });
+
+        // --- Tab Switching Logic ---
+        const upcomingTab = document.getElementById('upcomingTab');
+        const toReviseTab = document.getElementById('toReviseTab');
+        const completedTab = document.getElementById('completedTab');
+        const upcomingContent = document.getElementById('upcomingContent');
+        const toReviseContent = document.getElementById('toReviseContent');
+        const completedContent = document.getElementById('completedContent');
+
+        upcomingTab.addEventListener('click', () => {
+            setActiveTab(upcomingTab, upcomingContent);
+        });
+
+        toReviseTab.addEventListener('click', () => {
+            setActiveTab(toReviseTab, toReviseContent);
+        });
+
+        completedTab.addEventListener('click', () => {
+            setActiveTab(completedTab, completedContent);
+        });
+
+        /**
+         * Sets the active tab and displays its content.
+         * @param {HTMLElement} activeTabBtn - The button for the tab to activate.
+         * @param {HTMLElement} activeTabContent - The content div for the tab to activate.
+         */
+        function setActiveTab(activeTabBtn, activeTabContent) {
+            // Reset all tab buttons
+            [upcomingTab, toReviseTab, completedTab].forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            // Hide all tab contents
+            [upcomingContent, toReviseContent, completedContent].forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Activate the selected tab button
+            activeTabBtn.classList.add('border-blue-500', 'text-blue-600');
+            activeTabBtn.classList.remove('border-transparent', 'text-gray-500');
+            // Show the selected tab content
+            activeTabContent.classList.remove('hidden');
+        }
+
+        // --- Calendar Rendering ---
+        /**
+         * Renders the calendar grid for the current month and year.
+         * Displays revision indicators on relevant days.
+         */
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthYear = document.getElementById('monthYear');
+            calendar.innerHTML = ''; // Clear previous calendar days
+            
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDay = firstDay.getDay(); // Day of the week for the 1st of the month (0 for Sunday)
+            
+            const today = new Date();
+            const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
+            monthYear.textContent = `${firstDay.toLocaleString('default', { month: 'long' })} ${currentYear}`;
+
+            // Add empty divs for days before the 1st of the month
+            for (let i = 0; i < startDay; i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            // Populate calendar days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('calendar-day', 'p-2', 'rounded-lg', 'cursor-pointer', 'relative');
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.textContent = day;
+                dayNumber.classList.add('text-center', 'font-medium');
+                
+                // Highlight today's date
+                if (isCurrentMonth && day === today.getDate()) {
+                    dayDiv.classList.add('bg-blue-100', 'border', 'border-blue-200');
+                    dayNumber.classList.add('text-blue-600', 'font-bold');
+                }
+                dayDiv.appendChild(dayNumber);
+
+                // Find revisions scheduled for this specific day
+                const revisionsOnDay = revisions.flatMap(rev => 
+                    rev.revisionDates.filter(rd => rd.date === dateStr)
+                        .map(rd => ({ 
+                            id: rev.id,
+                            subject: rev.subject, 
+                            topic: rev.topic, 
+                            subtopics: rev.subtopics,
+                            completed: rd.completed,
+                            revisionDate: rd.date // The specific date from revisionDates
+                        }))
+                );
+
+                // Add subject color dots if there are revisions on this day
+                if (revisionsOnDay.length > 0) {
+                    const indicator = document.createElement('div');
+                    indicator.classList.add('absolute', 'bottom-1', 'left-0', 'right-0', 'flex', 'justify-center', 'gap-1');
+                    const subjectsOnDay = [...new Set(revisionsOnDay.map(r => r.subject))];
+                    subjectsOnDay.forEach(subject => {
+                        const dot = document.createElement('div');
+                        dot.classList.add('w-2', 'h-2', 'rounded-full', subjectColors[subject] || 'bg-gray-500');
+                        indicator.appendChild(dot);
+                    });
+                    dayDiv.appendChild(indicator);
+                }
+
+                // Add click listener to show details for the day
+                dayDiv.addEventListener('click', () => showCalendarDetails(dateStr, revisionsOnDay));
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        /**
+         * Displays a modal with details of revisions scheduled for a specific date.
+         * @param {string} dateStr - The date in YYYY-MM-DD format.
+         * @param {Array} revisionsOnDay - List of revision objects for that day.
+         */
+        function showCalendarDetails(dateStr, revisionsOnDay) {
+            const calendarDetails = document.getElementById('calendarDetails');
+            const detailsDate = document.getElementById('detailsDate');
+            const detailsContent = document.getElementById('detailsContent');
+
+            detailsDate.textContent = new Date(dateStr).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            detailsContent.innerHTML = ''; // Clear previous content
+
+            if (revisionsOnDay.length === 0) {
+                detailsContent.innerHTML = `
+                    <div class="text-center py-4 text-gray-500">
+                        <i class="fas fa-calendar-day text-3xl mb-2 text-gray-300"></i>
+                        <p>इस दिन के लिए कोई रिवीजन निर्धारित नहीं है</p> <!-- No revisions scheduled for this day -->
+                    </div>
+                `;
+            } else {
+                // Group revisions by subject for better display
+                const groupedRevisions = revisionsOnDay.reduce((acc, rev) => {
+                    if (!acc[rev.subject]) {
+                        acc[rev.subject] = [];
+                    }
+                    acc[rev.subject].push(rev);
+                    return acc;
+                }, {});
+
+                for (const subject in groupedRevisions) {
+                    const subjectDiv = document.createElement('div');
+                    subjectDiv.classList.add('bg-white', 'rounded-lg', 'p-3', 'shadow-sm');
+                    
+                    const subjectHeader = document.createElement('div');
+                    subjectHeader.classList.add('flex', 'justify-between', 'items-center', 'mb-2');
+                    subjectHeader.innerHTML = `
+                        <h4 class="font-bold text-gray-800">${subject}</h4>
+                        <span class="text-xs px-2 py-1 rounded-full ${groupedRevisions[subject].some(r => !r.completed) ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                            ${groupedRevisions[subject].filter(r => !r.completed).length} लंबित (pending)
+                        </span>
+                    `;
+                    subjectDiv.appendChild(subjectHeader);
+
+                    const topicsList = document.createElement('div');
+                    topicsList.classList.add('space-y-2');
+                    groupedRevisions[subject].forEach(rev => {
+                        const topicDiv = document.createElement('div');
+                        topicDiv.classList.add('flex', 'justify-between', 'items-center');
+                        
+                        const topicInfo = document.createElement('div');
+                        topicInfo.innerHTML = `
+                            <p class="text-sm ${rev.completed ? 'line-through text-gray-400' : 'text-gray-700'}">
+                                ${rev.topic}${rev.subtopics ? ' (' + rev.subtopics + ')' : ''}
+                            </p>
+                        `;
+                        
+                        const actions = document.createElement('div');
+                        actions.classList.add('flex', 'gap-2');
+                        
+                        if (!rev.completed) {
+                            actions.innerHTML = `
+                                <button class="completeBtn px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600" 
+                                    data-id="${rev.id}" data-date="${rev.revisionDate}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="deleteBtn px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600" 
+                                    data-id="${rev.id}" data-date="${rev.revisionDate}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `;
+                        } else {
+                            actions.innerHTML = `
+                                <span class="text-xs text-green-500">
+                                    <i class="fas fa-check-circle"></i> पूर्ण (Completed)
+                                </span>
+                            `;
+                        }
+                        
+                        topicDiv.appendChild(topicInfo);
+                        topicDiv.appendChild(actions);
+                        topicsList.appendChild(topicDiv);
+                    });
+                    subjectDiv.appendChild(topicsList);
+                    detailsContent.appendChild(subjectDiv);
+                }
+            }
+            
+            calendarDetails.classList.remove('hidden');
+            
+            // Attach event listeners for complete and delete buttons within the details modal
+            document.querySelectorAll('.completeBtn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    lastCompletedRevision = { id, date }; // Store for undo functionality
+
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'updateRevision',
+                                id: id,
+                                revisionDate: date,
+                                completed: true,
+                                completedAt: new Date().toISOString()
+                            }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            // Update local data
+                            revisions = revisions.map(rev => {
+                                if (rev.id === id) {
+                                    rev.revisionDates = rev.revisionDates.map(rd => 
+                                        rd.date === date ? { ...rd, completed: true, completedAt: new Date().toISOString() } : rd
+                                    );
+                                }
+                                return rev;
+                            });
+                            renderAllContent(); // Re-render all UI components
+                            // Re-show details to reflect changes immediately
+                            showCalendarDetails(dateStr, revisions.flatMap(rev => 
+                                rev.revisionDates.filter(rd => rd.date === dateStr)
+                                    .map(rd => ({ 
+                                        id: rev.id, subject: rev.subject, topic: rev.topic, subtopics: rev.subtopics,
+                                        completed: rd.completed, revisionDate: rd.date
+                                    }))
+                            ));
+                            showNotification('रिवीजन पूर्ण के रूप में चिह्नित किया गया!', 'success', true); // Revision marked as completed!
+                        } else {
+                            throw new Error(result.message || 'Failed to update revision');
+                        }
+                    } catch (error) {
+                        console.error('Error updating revision:', error);
+                        showNotification(`रिवीजन अपडेट करने में विफल! ${error.message}`, 'error'); // Failed to update revision!
+                    }
+                });
+            });
+
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'deleteRevision',
+                                id: id,
+                                revisionDate: date // Specific date to delete
+                            }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            // Update local data
+                            revisions = revisions.map(rev => {
+                                if (rev.id === id) {
+                                    rev.revisionDates = rev.revisionDates.filter(rd => rd.date !== date);
+                                }
+                                return rev;
+                            }).filter(rev => rev.revisionDates.length > 0); // Remove revision if no dates left
+                            
+                            renderAllContent(); // Re-render all UI components
+                            
+                            // Check if there are still revisions for the current day to re-render details
+                            const remainingRevisions = revisions.flatMap(rev => 
+                                rev.revisionDates.filter(rd => rd.date === dateStr)
+                                    .map(rd => ({ 
+                                        id: rev.id, subject: rev.subject, topic: rev.topic, subtopics: rev.subtopics,
+                                        completed: rd.completed, revisionDate: rd.date
+                                    }))
+                            );
+                            
+                            if (remainingRevisions.length > 0) {
+                                showCalendarDetails(dateStr, remainingRevisions);
+                            } else {
+                                calendarDetails.classList.add('hidden'); // Hide details if no revisions left for the day
+                            }
+                            showNotification('रिवीजन सफलतापूर्वक हटाया गया!', 'success'); // Revision deleted successfully!
+                        } else {
+                            throw new Error(result.message || 'Failed to delete revision');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting revision:', error);
+                        showNotification(`रिवीजन हटाने में विफल! ${error.message}`, 'error'); // Failed to delete revision!
+                    }
+                });
+            });
+        }
+
+        document.getElementById('closeDetails').addEventListener('click', () => {
+            document.getElementById('calendarDetails').classList.add('hidden');
+        });
+
+        // Calendar navigation buttons
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        });
+
+        document.getElementById('todayBtn').addEventListener('click', () => {
+            currentDate = new Date();
+            currentMonth = currentDate.getMonth();
+            currentYear = currentDate.getFullYear();
+            renderCalendar();
+        });
+
+        // --- Render Revision Lists (Upcoming, To Revise, Completed) ---
+
+        /**
+         * Renders the list of upcoming revisions.
+         * Applies search and filter criteria.
+         */
+        function renderUpcoming() {
+            const upcomingList = document.getElementById('upcomingList');
+            const upcomingSubtitle = document.getElementById('upcomingSubtitle');
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const filterSubjectValue = document.getElementById('filterSubject').value;
+            const filterStatusValue = document.getElementById('filterStatus').value;
+
+            upcomingList.innerHTML = '';
+            const today = new Date().toISOString().split('T')[0];
+
+            let filteredRevisions = revisions.filter(rev => 
+                rev.revisionDates.some(rd => rd.date > today && !rd.completed)
+            );
+
+            // Apply subject filter
+            if (filterSubjectValue) {
+                filteredRevisions = filteredRevisions.filter(rev => rev.subject === filterSubjectValue);
+            }
+            // Apply search filter
+            if (searchValue) {
+                filteredRevisions = filteredRevisions.filter(rev => 
+                    rev.subject.toLowerCase().includes(searchValue) || 
+                    rev.topic.toLowerCase().includes(searchValue) ||
+                    (rev.subtopics && rev.subtopics.toLowerCase().includes(searchValue))
+                );
+            }
+            // Apply status filter (only show relevant for 'upcoming')
+            if (filterStatusValue === 'completed') {
+                filteredRevisions = []; // Upcoming list should not show completed items
+            } else if (filterStatusValue === 'pending') {
+                // Already filtered for !rd.completed
+            }
+
+            // Sort by the earliest upcoming date
+            filteredRevisions.sort((a, b) => {
+                const dateA = a.revisionDates.find(rd => rd.date > today && !rd.completed)?.date || '9999-12-31';
+                const dateB = b.revisionDates.find(rd => rd.date > today && !rd.completed)?.date || '9999-12-31';
+                return dateA.localeCompare(dateB);
+            });
+
+            if (filteredRevisions.length === 0) {
+                upcomingList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-calendar-plus text-3xl mb-2 text-gray-300"></i>
+                        <p>कोई आगामी रिवीजन नहीं</p> <!-- No upcoming revisions -->
+                        <p class="text-sm mt-2">शुरू करने के लिए एक नया रिवीजन जोड़ें</p> <!-- Add a new revision to get started -->
+                    </div>
+                `;
+            } else {
+                filteredRevisions.forEach(rev => {
+                    // Find the earliest upcoming date for this revision
+                    const upcomingDate = rev.revisionDates.find(rd => rd.date > today && !rd.completed)?.date;
+                    if (upcomingDate) {
+                        const revisionItem = document.createElement('div');
+                        revisionItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'shadow-sm', 'fade-in');
+                        revisionItem.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full ${subjectColors[rev.subject] || 'bg-gray-500'} text-white">
+                                    ${rev.subject}
+                                </span>
+                                <span class="text-sm text-gray-500">${new Date(upcomingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                            <h3 class="font-bold text-gray-800 editable-topic" data-id="${rev.id}" contenteditable="false">${rev.topic}</h3>
+                            ${rev.subtopics ? `<p class="text-sm text-gray-600 editable-subtopics" data-id="${rev.id}" contenteditable="false">${rev.subtopics}</p>` : ''}
+                            <div class="flex justify-end gap-2 mt-3">
+                                <button class="completeBtn px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600" data-id="${rev.id}" data-date="${upcomingDate}">
+                                    पूर्ण
+                                </button>
+                                <button class="deleteBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600" data-id="${rev.id}" data-date="${upcomingDate}">
+                                    हटाएँ
+                                </button>
+                            </div>
+                        `;
+                        upcomingList.appendChild(revisionItem);
+                    }
+                });
+            }
+            upcomingSubtitle.textContent = `${filteredRevisions.length} निर्धारित`; // X scheduled
+            attachListButtonListeners(); // Attach event listeners to newly created buttons
+            setupEditableElements(); // Make new elements editable
+        }
+
+        /**
+         * Renders the list of revisions due today or overdue.
+         * Applies search and filter criteria.
+         */
+        function renderToRevise() {
+            const toReviseList = document.getElementById('toReviseList');
+            const toReviseSubtitle = document.getElementById('toReviseSubtitle');
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const filterSubjectValue = document.getElementById('filterSubject').value;
+            const filterStatusValue = document.getElementById('filterStatus').value;
+
+            toReviseList.innerHTML = '';
+            const today = new Date().toISOString().split('T')[0];
+
+            let filteredRevisions = revisions.filter(rev => 
+                rev.revisionDates.some(rd => rd.date <= today && !rd.completed)
+            );
+
+            // Apply subject filter
+            if (filterSubjectValue) {
+                filteredRevisions = filteredRevisions.filter(rev => rev.subject === filterSubjectValue);
+            }
+            // Apply search filter
+            if (searchValue) {
+                filteredRevisions = filteredRevisions.filter(rev => 
+                    rev.subject.toLowerCase().includes(searchValue) || 
+                    rev.topic.toLowerCase().includes(searchValue) ||
+                    (rev.subtopics && rev.subtopics.toLowerCase().includes(searchValue))
+                );
+            }
+            // Apply status filter (only show relevant for 'to revise')
+            if (filterStatusValue === 'completed') {
+                filteredRevisions = []; // To Revise list should not show completed items
+            } else if (filterStatusValue === 'pending') {
+                // Already filtered for !rd.completed
+            }
+
+            // Sort by the earliest pending date
+            filteredRevisions.sort((a, b) => {
+                const dateA = a.revisionDates.find(rd => rd.date <= today && !rd.completed)?.date || '9999-12-31';
+                const dateB = b.revisionDates.find(rd => rd.date <= today && !rd.completed)?.date || '9999-12-31';
+                return dateA.localeCompare(dateB);
+            });
+
+            if (filteredRevisions.length === 0) {
+                toReviseList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-clipboard-check text-3xl mb-2 text-gray-300"></i>
+                        <p>आज के लिए कोई लंबित रिवीजन नहीं!</p> <!-- No revisions pending for today! -->
+                        <p class="text-sm mt-2">आप सब कुछ पूरा कर चुके हैं!</p> <!-- You're all caught up! -->
+                    </div>
+                `;
+            } else {
+                filteredRevisions.forEach(rev => {
+                    // Find the earliest pending date for this revision
+                    const pendingDate = rev.revisionDates.find(rd => rd.date <= today && !rd.completed)?.date;
+                    if (pendingDate) {
+                        const revisionItem = document.createElement('div');
+                        revisionItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'shadow-sm', 'fade-in');
+                        revisionItem.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full ${subjectColors[rev.subject] || 'bg-gray-500'} text-white">
+                                    ${rev.subject}
+                                </span>
+                                <span class="text-sm text-gray-500">${new Date(pendingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                            <h3 class="font-bold text-gray-800 editable-topic" data-id="${rev.id}" contenteditable="false">${rev.topic}</h3>
+                            ${rev.subtopics ? `<p class="text-sm text-gray-600 editable-subtopics" data-id="${rev.id}" contenteditable="false">${rev.subtopics}</p>` : ''}
+                            <div class="flex justify-end gap-2 mt-3">
+                                <button class="completeBtn px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600" data-id="${rev.id}" data-date="${pendingDate}">
+                                    पूर्ण
+                                </button>
+                                <button class="deleteBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600" data-id="${rev.id}" data-date="${pendingDate}">
+                                    हटाएँ
+                                </button>
+                            </div>
+                        `;
+                        toReviseList.appendChild(revisionItem);
+                    }
+                });
+            }
+            toReviseSubtitle.textContent = `${filteredRevisions.length} लंबित`; // X pending
+            attachListButtonListeners();
+            setupEditableElements();
+        }
+
+        /**
+         * Renders the list of completed revisions.
+         * Applies search and filter criteria.
+         */
+        function renderCompleted() {
+            const completedList = document.getElementById('completedList');
+            const completedSubtitle = document.getElementById('completedSubtitle');
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const filterSubjectValue = document.getElementById('filterSubject').value;
+            const filterStatusValue = document.getElementById('filterStatus').value;
+
+            completedList.innerHTML = '';
+
+            let filteredRevisions = revisions.filter(rev => 
+                rev.revisionDates.some(rd => rd.completed)
+            );
+
+            // Apply subject filter
+            if (filterSubjectValue) {
+                filteredRevisions = filteredRevisions.filter(rev => rev.subject === filterSubjectValue);
+            }
+            // Apply search filter
+            if (searchValue) {
+                filteredRevisions = filteredRevisions.filter(rev => 
+                    rev.subject.toLowerCase().includes(searchValue) || 
+                    rev.topic.toLowerCase().includes(searchValue) ||
+                    (rev.subtopics && rev.subtopics.toLowerCase().includes(searchValue))
+                );
+            }
+            // Apply status filter (only show relevant for 'completed')
+            if (filterStatusValue === 'pending') {
+                filteredRevisions = []; // Completed list should not show pending items
+            } else if (filterStatusValue === 'completed') {
+                // Already filtered for rd.completed
+            }
+
+            // Flatten the revisions to get individual completed revision dates for display
+            const flatCompletedRevisions = filteredRevisions.flatMap(rev => 
+                rev.revisionDates.filter(rd => rd.completed).map(rd => ({
+                    id: rev.id,
+                    subject: rev.subject,
+                    topic: rev.topic,
+                    subtopics: rev.subtopics,
+                    completedDate: rd.date,
+                    completedAt: rd.completedAt || '' // Use completedAt if available
+                }))
+            );
+
+            // Sort by completion date (most recent first)
+            flatCompletedRevisions.sort((a, b) => b.completedDate.localeCompare(a.completedDate));
+
+            if (flatCompletedRevisions.length === 0) {
+                completedList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-history text-3xl mb-2 text-gray-300"></i>
+                        <p>अभी तक कोई पूर्ण रिवीजन नहीं!</p> <!-- No completed revisions yet! -->
+                        <p class="text-sm mt-2">यहां देखने के लिए कुछ रिवीजन पूरे करें!</p> <!-- Complete some revisions to see them here! -->
+                    </div>
+                `;
+            } else {
+                flatCompletedRevisions.forEach(rev => {
+                    const revisionItem = document.createElement('div');
+                    revisionItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'shadow-sm', 'fade-in');
+                    revisionItem.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold px-2 py-1 rounded-full ${subjectColors[rev.subject] || 'bg-gray-500'} text-white">
+                                ${rev.subject}
+                            </span>
+                            <span class="text-sm text-gray-500">पूर्ण: ${new Date(rev.completedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        <h3 class="font-bold text-gray-800 line-through text-gray-600 editable-topic" data-id="${rev.id}" contenteditable="false">${rev.topic}</h3>
+                        ${rev.subtopics ? `<p class="text-sm text-gray-500 line-through editable-subtopics" data-id="${rev.id}" contenteditable="false">${rev.subtopics}</p>` : ''}
+                        <div class="flex justify-end gap-2 mt-3">
+                            <button class="undoCompleteBtn px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600" data-id="${rev.id}" data-date="${rev.completedDate}">
+                                पूर्ववत करें
+                            </button>
+                            <button class="deleteBtn px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600" data-id="${rev.id}" data-date="${rev.completedDate}">
+                                हटाएँ
+                            </button>
+                        </div>
+                    `;
+                    completedList.appendChild(revisionItem);
+                });
+            }
+            completedSubtitle.textContent = `${flatCompletedRevisions.length} पूर्ण`; // X completed
+            attachListButtonListeners();
+            setupEditableElements();
+        }
+
+        /**
+         * Attaches event listeners to 'Complete', 'Delete', and 'Undo' buttons
+         * found within the revision lists (Upcoming, To Revise, Completed).
+         */
+        function attachListButtonListeners() {
+            // Complete button listener
+            document.querySelectorAll('.completeBtn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+                    lastCompletedRevision = { id, date }; // Store for undo
+
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'updateRevision', id: id, revisionDate: date, completed: true, completedAt: new Date().toISOString() }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            // Update local data
+                            revisions = revisions.map(rev => {
+                                if (rev.id === id) {
+                                    rev.revisionDates = rev.revisionDates.map(rd => rd.date === date ? { ...rd, completed: true, completedAt: new Date().toISOString() } : rd );
+                                }
+                                return rev;
+                            });
+                            renderAllContent(); // Re-render all UI
+                            showNotification('रिवीजन पूर्ण के रूप में चिह्नित किया गया!', 'success', true); // Revision marked as completed!
+                        } else {
+                            throw new Error(result.message || 'Failed to complete revision');
+                        }
+                    } catch (error) {
+                        console.error('Error completing revision:', error);
+                        showNotification(`रिवीजन पूर्ण करने में विफल! ${error.message}`, 'error'); // Failed to complete revision!
+                    }
+                };
+            });
+
+            // Delete button listener
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date; // Specific date to delete
+
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'deleteRevision', id: id, revisionDate: date }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            // Update local data: filter out the specific date, or the entire revision if no dates left
+                            revisions = revisions.map(rev => {
+                                if (rev.id === id) {
+                                    rev.revisionDates = rev.revisionDates.filter(rd => rd.date !== date);
+                                }
+                                return rev;
+                            }).filter(rev => rev.revisionDates.length > 0); // Remove revision if no dates left
+                            
+                            renderAllContent(); // Re-render all UI
+                            showNotification('रिवीजन सफलतापूर्वक हटाया गया!', 'success'); // Revision deleted successfully!
+                        } else {
+                            throw new Error(result.message || 'Failed to delete revision');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting revision:', error);
+                        showNotification(`रिवीजन हटाने में विफल! ${error.message}`, 'error'); // Failed to delete revision!
+                    }
+                };
+            });
+
+            // Undo Complete button listener
+            document.querySelectorAll('.undoCompleteBtn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.dataset.id);
+                    const date = btn.dataset.date;
+
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'updateRevision', id: id, revisionDate: date, completed: false, completedAt: '' }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+                        const result = await response.json();
+                        if (result.status === 'success') {
+                            // Update local data
+                            revisions = revisions.map(rev => {
+                                if (rev.id === id) {
+                                    rev.revisionDates = rev.revisionDates.map(rd => rd.date === date ? { ...rd, completed: false, completedAt: '' } : rd );
+                                }
+                                return rev;
+                            });
+                            renderAllContent(); // Re-render all UI
+                            showNotification('रिवीजन पूर्ववत किया गया!', 'info'); // Revision uncompleted!
+                        } else {
+                            throw new Error(result.message || 'Failed to undo completion');
+                        }
+                    } catch (error) {
+                        console.error('Error undoing completion:', error);
+                        showNotification(`पूर्ववत करने में विफल! ${error.message}`, 'error'); // Failed to undo!
+                    }
+                };
+            });
+        }
+
+        // --- Notification System ---
+        let notificationTimeout;
+        /**
+         * Displays a transient notification message.
+         * @param {string} message - The message to display.
+         * @param {'success'|'error'|'info'} type - Type of notification (determines color and icon).
+         * @param {boolean} allowUndo - Whether to show an undo button (only for success type).
+         */
+        function showNotification(message, type, allowUndo = false) {
+            let notificationContainer = document.getElementById('notificationContainer');
+            if (!notificationContainer) {
+                notificationContainer = document.createElement('div');
+                notificationContainer.id = 'notificationContainer';
+                notificationContainer.classList.add('fixed', 'bottom-4', 'left-1/2', '-translate-x-1/2', 'z-50', 'w-full', 'max-w-xs', 'px-4');
+                document.body.appendChild(notificationContainer);
+            }
+
+            let currentNotification = document.getElementById('notification');
+            if (!currentNotification) {
+                currentNotification = document.createElement('div');
+                currentNotification.id = 'notification';
+                currentNotification.classList.add('rounded-lg', 'shadow-lg', 'p-4', 'flex', 'items-center', 'justify-between', 'text-white', 'transform', 'translate-y-full', 'opacity-0', 'transition-all', 'duration-300', 'ease-out');
+                notificationContainer.appendChild(currentNotification);
+            }
+
+            currentNotification.innerHTML = `
+                <div class="flex items-center">
+                    <span id="notificationIcon" class="mr-2 text-xl"></span>
+                    <span id="notificationMessage">${message}</span>
+                </div>
+                ${allowUndo && lastCompletedRevision ? '<button id="undoBtn" class="ml-4 px-3 py-1 bg-white bg-opacity-30 rounded-md text-sm hover:bg-opacity-50">पूर्ववत करें</button>' : ''}
+            `;
+            
+            currentNotification.classList.remove('bg-green-500', 'bg-red-500', 'bg-blue-500');
+            const icon = document.getElementById('notificationIcon');
+            if (type === 'success') {
+                currentNotification.classList.add('bg-green-500');
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            } else if (type === 'error') {
+                currentNotification.classList.add('bg-red-500');
+                icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            } else if (type === 'info') {
+                currentNotification.classList.add('bg-blue-500');
+                icon.innerHTML = '<i class="fas fa-info-circle"></i>';
+            }
+
+            // Show notification
+            clearTimeout(notificationTimeout);
+            currentNotification.classList.remove('translate-y-full', 'opacity-0');
+            currentNotification.classList.add('translate-y-0', 'opacity-100');
+
+            if (allowUndo && lastCompletedRevision) {
+                const undoBtn = document.getElementById('undoBtn');
+                if (undoBtn) {
+                    undoBtn.addEventListener('click', () => {
+                        if (lastCompletedRevision) {
+                            undoLastCompletion(lastCompletedRevision.id, lastCompletedRevision.date);
+                            lastCompletedRevision = null; // Clear undo info after undoing
+                        }
+                        hideNotification();
+                    });
+                }
+            }
+
+            notificationTimeout = setTimeout(hideNotification, 5000); // Hide after 5 seconds
+        }
+
+        /**
+         * Undoes the last completed revision.
+         * @param {number} id - ID of the revision.
+         * @param {string} date - Date of the revision to undo.
+         */
+        async function undoLastCompletion(id, date) {
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'updateRevision', id: id, revisionDate: date, completed: false, completedAt: '' }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // Update local data
+                    revisions = revisions.map(rev => {
+                        if (rev.id === id) {
+                            rev.revisionDates = rev.revisionDates.map(rd => rd.date === date ? { ...rd, completed: false, completedAt: '' } : rd );
+                        }
+                        return rev;
+                    });
+                    renderAllContent(); // Re-render all UI
+                    showNotification('रिवीजन पूर्ववत किया गया!', 'info'); // Revision uncompleted!
+                } else {
+                    throw new Error(result.message || 'Failed to undo revision');
+                }
+            } catch (error) {
+                console.error('Error undoing revision:', error);
+                showNotification(`पूर्ववत करने में विफल! ${error.message}`, 'error'); // Failed to undo!
+            }
+        }
+
+        /**
+         * Hides the currently displayed notification.
+         */
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-full', 'opacity-0');
+            }
+        }
+
+        // --- Export and Import functionality ---
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const dataStr = JSON.stringify({ revisions, subjects }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'revision_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('डेटा सफलतापूर्वक निर्यात किया गया!', 'success'); // Data exported successfully!
+        });
+
+        document.getElementById('importBtn').addEventListener('click', () => {
+            document.getElementById('importFile').click();
+        });
+
+        document.getElementById('importFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        
+                        // Clear existing data before importing new
+                        await fetch(WEB_APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'clearAll' }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+
+                        // Add imported revisions one by one
+                        for (const rev of importedData.revisions) {
+                            await fetch(WEB_APP_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    action: 'addRevision',
+                                    id: rev.id,
+                                    subject: rev.subject,
+                                    topic: rev.topic,
+                                    subtopics: rev.subtopics,
+                                    revisionDates: rev.revisionDates, // Send the whole array
+                                    createdAt: rev.createdAt
+                                }),
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                        }
+                        
+                        // Reload all data after import
+                        await loadRevisions();
+                        showNotification('डेटा सफलतापूर्वक आयात किया गया!', 'success'); // Data imported successfully!
+                    } catch (err) {
+                        console.error('Error importing data:', err);
+                        showNotification(`डेटा आयात करने में विफल! ${err.message}`, 'error'); // Failed to import data!
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // --- Search and Filter Functionality ---
+        document.getElementById('searchInput').addEventListener('keyup', () => {
+            renderUpcoming();
+            renderToRevise();
+            renderCompleted();
+        });
+
+        document.getElementById('filterSubject').addEventListener('change', () => {
+            renderUpcoming();
+            renderToRevise();
+            renderCompleted();
+        });
+
+        document.getElementById('filterStatus').addEventListener('change', () => {
+            renderUpcoming();
+            renderToRevise();
+            renderCompleted();
+        });
+
+        /**
+         * Updates the subject filter dropdown with current subjects.
+         */
+        function updateSubjectFilter() {
+            const filterSubjectSelect = document.getElementById('filterSubject');
+            filterSubjectSelect.innerHTML = '<option value="">सभी विषय</option>'; // All Subjects
+            subjects.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                filterSubjectSelect.appendChild(option);
+            });
+        }
+
+        // --- Clear All/Specific Subject Confirmation Modal ---
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const clearAllModal = document.getElementById('clearAllModal');
+        const cancelClearAllBtn = document.getElementById('cancelClearAllBtn');
+        const cancelClearAllBtn2 = document.getElementById('cancelClearAllBtn2');
+        const confirmClearAllBtn = document.getElementById('confirmClearAllBtn');
+        const clearSubjectSelect = document.getElementById('clearSubject');
+
+        clearAllBtn.addEventListener('click', () => {
+            clearAllModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            // Populate subject dropdown for clear
+            clearSubjectSelect.innerHTML = '<option value="">सभी विषय</option>'; // All Subjects
+            subjects.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                clearSubjectSelect.appendChild(option);
+            });
+        });
+
+        cancelClearAllBtn.addEventListener('click', () => {
+            clearAllModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+        cancelClearAllBtn2.addEventListener('click', () => {
+            clearAllModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+
+        confirmClearAllBtn.addEventListener('click', async () => {
+            const subjectToClear = clearSubjectSelect.value;
+            let success = false;
+            try {
+                if (subjectToClear) {
+                    // Clear revisions for specific subject
+                    const response = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'clearSubject', subject: subjectToClear }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    }
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        revisions = revisions.filter(rev => rev.subject !== subjectToClear);
+                        subjects = subjects.filter(sub => sub !== subjectToClear); // Remove subject from list
+                        showNotification(`${subjectToClear} के सभी रिवीजन हटा दिए गए!`, 'success'); // All revisions for X cleared!
+                        success = true;
+                    } else {
+                        throw new Error(result.message || 'Failed to clear subject revisions');
+                    }
+                } else {
+                    // Clear all revisions
+                    const response = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'clearAll' }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    }
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        revisions = [];
+                        subjects = []; // Clear all subjects
+                        showNotification('सभी रिवीजन हटा दिए गए!', 'success'); // All revisions cleared!
+                        success = true;
+                    } else {
+                        throw new Error(result.message || 'Failed to clear all revisions');
+                    }
+                }
+            } catch (error) {
+                console.error('Error clearing revisions:', error);
+                showNotification(`रिवीजन हटाने में विफल! ${error.message}`, 'error'); // Failed to clear revisions!
+            } finally {
+                clearAllModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                if (success) {
+                    renderAllContent(); // Re-render all UI after clearing
+                }
+            }
+        });
+
+        // --- Edit functionality for Topic and Subtopics ---
+        /**
+         * Enables in-place editing for topic and subtopic elements.
+         */
+        function setupEditableElements() {
+            document.querySelectorAll('.editable-topic, .editable-subtopics').forEach(el => {
+                // Remove existing listeners to prevent duplicates
+                el.removeEventListener('dblclick', enableEditing);
+                el.removeEventListener('blur', saveEdit);
+                el.removeEventListener('keydown', handleKeyDown);
+
+                // Add new listeners
+                el.addEventListener('dblclick', enableEditing);
+                el.addEventListener('blur', saveEdit);
+                el.addEventListener('keydown', handleKeyDown);
+            });
+        }
+
+        function enableEditing(event) {
+            const el = event.target;
+            el.contentEditable = 'true';
+            el.focus();
+            el.classList.add('bg-blue-50', 'outline-none', 'px-2', 'py-1', 'rounded');
+        }
+
+        async function saveEdit(event) {
+            const el = event.target;
+            el.contentEditable = 'false';
+            el.classList.remove('bg-blue-50', 'outline-none', 'px-2', 'py-1', 'rounded');
+            
+            const id = parseInt(el.dataset.id);
+            const field = el.classList.contains('editable-topic') ? 'topic' : 'subtopics';
+            const newValue = el.textContent.trim();
+            
+            // Find the revision locally and update
+            revisions = revisions.map(rev => {
+                if (rev.id === id) {
+                    return { ...rev, [field]: newValue };
+                }
+                return rev;
+            });
+            
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'updateRevisionDetails',
+                        id: id,
+                        field: field,
+                        value: newValue
+                    }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showNotification('रिवीजन सफलतापूर्वक अपडेट किया गया!', 'success'); // Revision updated successfully!
+                    renderAllContent(); // Re-render to reflect changes if needed elsewhere
+                } else {
+                    throw new Error(result.message || 'Failed to update revision details');
+                }
+            } catch (error) {
+                console.error('Error updating revision details:', error);
+                showNotification(`रिवीजन अपडेट करने में विफल! ${error.message}`, 'error'); // Failed to update revision!
+            }
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent new line
+                event.target.blur(); // Trigger blur to save changes
+            }
+        }
+
+        // Initial Load of data when the page loads
+        loadRevisions();
+    </script>
+</body>
+</html>
