@@ -421,6 +421,66 @@
             const coursesGrid = document.getElementById('coursesGrid');
             const clearBtn = document.getElementById('clearBtn');
 
+            // --- NEW: List of available subject pages (add all your actual page names here) ---
+            const availableSubjectPages = [
+                'pol-sci-3',
+                'history-3',
+                'economics-3',
+                'english-3',
+                'hindi-3',
+                'urdu-3',
+                'philosophy-3',
+                'sociology-3',
+                'psychology-3',
+                'zoology-3',
+                'chemistry-3',
+                'physics-3',
+                'mathematics-3',
+                'botany-3',
+                // Add more available pages for MJC-4, MIC-3, MDC-3, SEC-3, AEC-3 here
+                'pol-sci-4',
+                'history-4',
+                'economics-4',
+                'english-4',
+                'hindi-4',
+                'urdu-4',
+                'philosophy-4',
+                'sociology-4',
+                'psychology-4',
+                'zoology-4',
+                'chemistry-4',
+                'physics-4',
+                'mathematics-4',
+                'botany-4',
+                'mic-history',
+                'mic-pol-sci',
+                'mic-urdu',
+                'mic-economics',
+                'mic-hindi',
+                'mic-english',
+                'mic-geography',
+                'mic-philosophy',
+                'mic-zoology',
+                'mic-chemistry',
+                'mic-physics',
+                'mic-botany',
+                'mdc-history',
+                'mdc-pol-sci',
+                'mdc-urdu',
+                'mdc-economics',
+                'mdc-hindi',
+                'mdc-english',
+                'mdc-geography',
+                'mdc-philosophy',
+                'mdc-zoology',
+                'mdc-chemistry',
+                'mdc-physics',
+                'mdc-botany',
+                'communication-in-professional-life',
+                'disaster-risk-management'
+            ];
+            // --- END NEW ---
+
             const courses = [
                 {
                     id: 'mjc3',
@@ -453,78 +513,6 @@
                     subjects: ['Disaster-Risk-Management']
                 }
             ];
-
-            // --- IMPORTANT: Centralized List of AVAILABLE HTML Subject Pages ---
-            // इस सूची को केवल तभी अपडेट करें जब आप किसी विषय के लिए समर्पित HTML पेज बनाते/हटाते हैं।
-            // सुनिश्चित करें कि यहां के विषय नाम HTML फ़ाइल के नाम (बिना .html एक्सटेंशन के) और
-            // डेटा-सब्जेक्ट एट्रीब्यूट से मेल खाते हों, और वे लोअरकेस में हों।
-            // उदाहरण: यदि आपके पास 'MJC-Pol-Sci-3.html' नामक फ़ाइल है, तो "mjc-pol-sci-3" जोड़ें।
-            // 'MIC-History.html' के लिए "mic-history"।
-            // यदि कोई 'MDC' विषय 'MIC' नाम से जाता है (आपके दिए गए डेटा के अनुसार 'MIC-Urdu' MDC के तहत),
-            // तो यहाँ 'mic-urdu' ही डालें, क्योंकि यही वह स्ट्रिंग होगी जिसकी जांच की जाएगी।
-            const availableSubjectPages = [
-                // MJC-3 subjects
-                "mjc-pol-sci-3",
-                "mjc-history-3",
-                "mjc-economics-3",
-                "mjc-english-3",
-                "mjc-hindi-3",
-                "mjc-urdu-3",
-                "mjc-philosophy-3",
-                "mjc-sociology-3",
-                "mjc-psychology-3",
-                "mjc-zoology-3",
-                "mjc-chemistry-3",
-                "mjc-physics-3",
-                "mjc-mathematics-3",
-                "mjc-botany-3",
-                // MJC-4 subjects
-                "mjc-pol-sci-4",
-                "mjc-history-4",
-                "mjc-economics-4",
-                "mjc-english-4",
-                "mjc-hindi-4",
-                "mjc-urdu-4",
-                "mjc-philosophy-4",
-                "mjc-sociology-4",
-                "mjc-psychology-4",
-                "mjc-zoology-4",
-                "mjc-chemistry-4",
-                "mjc-physics-4",
-                "mjc-mathematics-4",
-                "mjc-botany-4",
-                // MIC-3 subjects
-                "mic-history",
-                "mic-pol-sci",
-                "mic-urdu",
-                "mic-economics",
-                "mic-hindi",
-                "mic-english",
-                "mic-geography",
-                "mic-philosophy",
-                "mic-zoology",
-                "mic-chemistry",
-                "mic-physics",
-                "mic-botany",
-                // MDC-3 subjects (NOTE: Some MDC subjects are listed as 'MIC-' in your data)
-                "mdc-history",
-                "mdc-pol-sci",
-                "mic-urdu", // This is 'MIC-Urdu' in MDC's list
-                "mdc-economics",
-                "mdc-hindi",
-                "mdc-english",
-                "mdc-geography",
-                "mdc-philosophy",
-                "mdc-zoology",
-                "mdc-chemistry",
-                "mdc-physics",
-                "mdc-botany",
-                // SEC-3 subjects
-                "communication-in-professional-life",
-                // AEC-3 subjects
-                "disaster-risk-management"
-            ];
-
 
             function sanitizeInput(input) {
                 const div = document.createElement('div');
@@ -618,7 +606,7 @@
                             ).join('')}
                         </select>
                         ${savedSubject ? 
-                            `<button class="subject-btn" data-subject="${savedSubject}" data-course-id="${course.id}">Open ${savedSubject} Page</button>` : 
+                            `<button class="subject-btn" data-subject="${savedSubject}">Open ${savedSubject} Page</button>` : 
                             ''}
                     `;
                     
@@ -636,11 +624,22 @@
                                 btn.className = 'subject-btn';
                                 btn.textContent = `Open ${subject} Page`;
                                 btn.dataset.subject = subject;
-                                btn.dataset.courseId = course.id; // Store course ID for logic
                                 
-                                // --- MODIFIED: Subject Button Click Logic (for newly selected) ---
+                                // --- MODIFIED: Subject Button Click Logic ---
                                 btn.addEventListener('click', function() {
-                                    handleSubjectRedirection(this.dataset.subject, this.dataset.courseId);
+                                    const subjectName = this.dataset.subject; // e.g., "MJC-3 History"
+                                    const lowerCaseSubjectName = subjectName.toLowerCase().replace(/ /g, '-'); // Convert to lowercase and replace spaces with hyphens for consistency
+
+                                    if (availableSubjectPages.includes(lowerCaseSubjectName)) {
+                                        // If available, redirect to the subject's HTML page
+                                        const fileName = subjectName.replace(/ /g, '_') + '.html'; // Replace spaces with underscores for filenames
+                                        window.location.href = fileName;
+                                    } else {
+                                        // If NOT available, redirect to the Subject Request Form
+                                        // Pass the requested subject name as a URL parameter
+                                        const redirectToFormUrl = `subject_request_form.html?requestedSubject=${encodeURIComponent(subjectName)}`;
+                                        window.location.href = redirectToFormUrl;
+                                    }
                                 });
                                 // --- END MODIFIED ---
                                 
@@ -664,54 +663,21 @@
                     if (existingBtn) {
                         // --- MODIFIED: Existing Subject Button Click Logic ---
                         existingBtn.addEventListener('click', function() {
-                            handleSubjectRedirection(this.dataset.subject, this.dataset.courseId);
+                            const subjectName = this.dataset.subject;
+                            const lowerCaseSubjectName = subjectName.toLowerCase().replace(/ /g, '-'); // Convert to lowercase and replace spaces with hyphens
+
+                            if (availableSubjectPages.includes(lowerCaseSubjectName)) {
+                                const fileName = subjectName.replace(/ /g, '_') + '.html'; // Replace spaces with underscores for filenames
+                                window.location.href = fileName;
+                            } else {
+                                const redirectToFormUrl = `subject_request_form.html?requestedSubject=${encodeURIComponent(subjectName)}`;
+                                window.location.href = redirectToFormUrl;
+                            }
                         });
                         // --- END MODIFIED ---
                     }
                 });
             }
-
-            // --- NEW FUNCTION: Handles subject redirection logic ---
-            function handleSubjectRedirection(subjectName, courseId) {
-                let fullSubjectName = subjectName;
-
-                // Prepend course-specific prefixes if needed
-                // This ensures the subject name matches the expected file naming convention
-                if (courseId.startsWith('mjc') && !fullSubjectName.startsWith('MJC-')) {
-                    fullSubjectName = `MJC-${fullSubjectName}`;
-                } else if (courseId.startsWith('mic') && !fullSubjectName.startsWith('MIC-')) {
-                    fullSubjectName = `MIC-${fullSubjectName}`;
-                } else if (courseId.startsWith('mdc') && !fullSubjectName.startsWith('MDC-')) {
-                    // Special handling for MDC if some subjects use 'MIC-' prefix in name
-                    if (!fullSubjectName.startsWith('MIC-')) { // Check if it's not already MIC-prefixed
-                         fullSubjectName = `MDC-${fullSubjectName}`;
-                    }
-                } else if (courseId.startsWith('sec') && !fullSubjectName.startsWith('SEC-')) {
-                    fullSubjectName = `SEC-${fullSubjectName}`;
-                } else if (courseId.startsWith('aec') && !fullSubjectName.startsWith('AEC-')) {
-                    fullSubjectName = `AEC-${fullSubjectName}`;
-                } else if (courseId.startsWith('vac') && !fullSubjectName.startsWith('VAC-')) {
-                    fullSubjectName = `VAC-${fullSubjectName}`;
-                }
-
-                // Convert to lowercase for consistent checking against availableSubjectPages
-                const lowerCaseFullSubjectName = fullSubjectName.toLowerCase();
-
-                // Replace spaces with underscores for filename if that's your convention
-                const fileName = fullSubjectName.replace(/ /g, '_') + '.html';
-
-                // Check if the subject's page is available in our centralized list
-                if (availableSubjectPages.includes(lowerCaseFullSubjectName)) {
-                    // If available, redirect to the subject's HTML page
-                    window.location.href = fileName;
-                } else {
-                    // If NOT available, redirect to the Subject Request Form
-                    // Pass the requested subject name as a URL parameter
-                    const redirectToFormUrl = `subject_request_form.html?requestedSubject=${encodeURIComponent(fullSubjectName)}`;
-                    window.location.href = redirectToFormUrl;
-                }
-            }
-            // --- END NEW FUNCTION ---
 
             // Clear all selected subjects
             clearBtn.addEventListener('click', function() {
