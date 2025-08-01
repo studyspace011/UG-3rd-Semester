@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,7 +163,7 @@
         }
 
         .btn:hover {
-            transform: translateY(-3px);
+            transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(253, 121, 168, 0.6);
         }
 
@@ -214,6 +215,10 @@
             background: #d63031;
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(214, 48, 49, 0.4);
+        }
+
+        .clear-btn:active {
+            transform: translateY(0);
         }
 
         .courses-grid {
@@ -371,6 +376,7 @@
                 <a href="semester2.html">2nd Semester</a>
             </div>
         </h2>
+
         <form id="contactForm" onsubmit="return postToGoogle(event);">
             <div class="input-group">
                 <label for="name">Your Name</label>
@@ -453,6 +459,25 @@
                     subjects: ['Disaster-Risk-Management']
                 }
             ];
+
+            // --- NEW: Centralized List of AVAILABLE HTML Subject Pages ---
+            // Update this list ONLY when you create/delete a subject's dedicated HTML page.
+            // Ensure subject names match exactly what's in data-subject attributes or select options.
+            const availableSubjectPages = [
+                "MJC-1 History",
+                "MJC-1 Political Science",
+                "MJC-1 Economics",
+                "MIC-1 Hindi",
+                // Add all other subjects for which you have corresponding HTML files (e.g., MJC-1_History.html)
+                // Examples from your provided list that MIGHT have pages:
+                "AEC-1", "AEC-2", "AEC-3", "AEC-4",
+                "INT-1",
+                "MDC-1", "MDC-2", "MDC-3",
+                "MIC-1", "MIC-2", "MIC-3", "MIC-4", "MIC-5", "MIC-6", "MIC-7", "MIC-8", "MIC-9", "MIC-10",
+                "MJC-1", "MJC-2", "MJC-3", "MJC-4", "MJC-5", "MJC-6", "MJC-7", "MJC-8", "MJC-9", "MJC-10", "MJC-11", "MJC-12", "MJC-13", "MJC-14", "MJC-15", "MJC-16",
+                "SEC-1", "SEC-2", "SEC-3",
+                // REMEMBER: Only add subjects here if their HTML file exists.
+            ].map(subject => subject.toLowerCase()); // Convert to lowercase for case-insensitive check
 
             function sanitizeInput(input) {
                 const div = document.createElement('div');
