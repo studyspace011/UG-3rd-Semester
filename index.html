@@ -565,11 +565,24 @@
                                 btn.textContent = `Open ${subject} Page`;
                                 btn.dataset.subject = subject;
                                 
+                                // --- MODIFIED: Subject Button Click Logic ---
                                 btn.addEventListener('click', function() {
-                                    const subjectName = this.dataset.subject;
-                                    const fileName = subjectName.replace(/ /g, '_') + '.html';
-                                    window.location.href = fileName;
+                                    const subjectName = this.dataset.subject; // e.g., "MJC-1 History"
+                                    const lowerCaseSubjectName = subjectName.toLowerCase();
+
+                                    // Check if the subject's page is available in our centralized list
+                                    if (availableSubjectPages.includes(lowerCaseSubjectName)) {
+                                        // If available, redirect to the subject's HTML page
+                                        const fileName = subjectName.replace(/ /g, '_') + '.html';
+                                        window.location.href = fileName;
+                                    } else {
+                                        // If NOT available, redirect to the Subject Request Form
+                                        // Pass the requested subject name as a URL parameter
+                                        const redirectToFormUrl = `subject_request_form.html?requestedSubject=${encodeURIComponent(subjectName)}`;
+                                        window.location.href = redirectToFormUrl;
+                                    }
                                 });
+                                // --- END MODIFIED ---
                                 
                                 this.parentNode.appendChild(btn);
                                 btn.style.opacity = '0';
@@ -589,11 +602,20 @@
                     
                     const existingBtn = card.querySelector('.subject-btn');
                     if (existingBtn) {
+                        // --- MODIFIED: Existing Subject Button Click Logic ---
                         existingBtn.addEventListener('click', function() {
                             const subjectName = this.dataset.subject;
-                            const fileName = subjectName.replace(/ /g, '_') + '.html';
-                            window.location.href = fileName;
+                            const lowerCaseSubjectName = subjectName.toLowerCase();
+
+                            if (availableSubjectPages.includes(lowerCaseSubjectName)) {
+                                const fileName = subjectName.replace(/ /g, '_') + '.html';
+                                window.location.href = fileName;
+                            } else {
+                                const redirectToFormUrl = `subject_request_form.html?requestedSubject=${encodeURIComponent(subjectName)}`;
+                                window.location.href = redirectToFormUrl;
+                            }
                         });
+                        // --- END MODIFIED ---
                     }
                 });
             }
